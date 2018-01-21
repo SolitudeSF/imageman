@@ -49,6 +49,7 @@ proc applyKernel*(img: var Image, k: seq[seq[float]]) =
     temp = newImage(img.len, img[0].len, white)
   for i in k:
     for j in i: denom += j
+  #denom = k.foldl(a + b.foldl(a + b), 0.0)
   if denom == 0: denom = 1
   for x in 0..img.high - kh:
     for y in 0..img[0].high - kw:

@@ -12,6 +12,9 @@ type
 
 proc isInside*(p: Point, i: Image): bool = p.x >= 0 and p.y >= 0 and p.x < i.len and p.y < i[0].len
 
+template h*(i: Image): int = i.len
+template w*(i: Image): int = i[0].len
+
 template `[]`*(i: Image, x, y: SomeInteger): Color = i[x][y]
 template `[]`*(i: Image, p: Point): Color = i[p.x][p.y]
 template `[]=`*(i: var Image, x, y: SomeInteger, c: Color) = i[x][y] = c
@@ -26,9 +29,8 @@ template `g=`*(c: var Color, i: uint8) = c[1] = i
 template `b=`*(c: var Color, i: uint8) = c[2] = i
 template `a=`*(c: var Color4, i: uint8) = c[3] = i
 
-proc addAlpha*(c: Color3, a = 255'u8): Color4 = [c.r, c.g, c.b, a]
-proc removeAlpha*(c: Color4): Color3 = [c.r, c.g, c.b]
-template color(r, g, b: int | uint8): Color3 = [r.uint8, g.uint8, b.uint8]
+proc withAlpha*(c: Color3, a = 255'u8): Color4 = [c.r, c.g, c.b, a]
+proc withoutAlpha*(c: Color4): Color3 = [c.r, c.g, c.b]
 
 const
   white*   = [255'u8, 255'u8, 255'u8]
@@ -38,7 +40,7 @@ const
   blue*    = [0'u8  , 0'u8  , 255'u8]
   yellow*  = [255'u8, 255'u8, 0'u8  ]
   magenta* = [255'u8, 0'u8  , 255'u8]
-  transparent* = white.addAlpha 0
+  transparent* = white.withAlpha 0
 
 proc `.*=`*(c: var Color, i: uint8) =
   c.r = i
