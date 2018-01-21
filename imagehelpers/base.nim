@@ -79,14 +79,11 @@ proc interpolate*(a, b: Color4, x, L: int): Color =
 proc newImage*(h, w: SomeInteger, c: Color): Image = newSeqWith(h, newSeqWith(w, c))
 
 proc strToImage3*(str: string, width, height: SomeInteger): Image3 =
- echo "1"
  result = newSeqWith(height, newSeq[Color3](width))
- echo "2"
  let s = cast[seq[uint8]](str)
  for y in 0..<height:
   for x in 0..<width:
    for i in 0..2: result[y][x][i] = s[((y * width) + x) * 3 + i]
- echo "3"
 
 proc strToImage4*(str: string, width, height: SomeInteger): Image4 =
  result = newSeqWith(height, newSeq[Color4](width))
@@ -110,7 +107,7 @@ proc loadImage4*(file: string): Image4 =
   let source = loadPNG32 file
   source.data.strToImage4(source.width, source.height)
 
-#template loadImage*(file: string): Image = file.loadImage3
+#template loadImage*(file: string): auto = file.loadImage3
 
 proc saveImage*(image: Image3, file: string) =
   discard savePNG24(file, image.imageToStr, image[0].len, image.len)

@@ -13,11 +13,11 @@ requires "nimPNG"
 skipDirs = @["tests"]
 
 task test, "run all tests":
-  exec "nim c -d:debug -r tests/imageloading"
-  exec "nim c -d:debug -r tests/t_filters"
+  exec "nim c -r tests/imageloading"
+  exec "nim c -r tests/filters"
 
 task imageloading, "test creating and loading of images":
-  exec "nim c -d:debug -r tests/imageloading"
+  exec "nim c -r tests/imageloading"
 
 task filters, "test filters":
-  exec "nim c -d:debug -r tests/t_filters"
+  exec "nim c -r tests/filters"

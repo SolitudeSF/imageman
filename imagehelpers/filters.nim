@@ -45,8 +45,10 @@ proc applyKernel*(img: var Image, k: seq[seq[float]]) =
     kh = k.len
     kw = k[0].len
   var
-    denom = k.foldl(a + b.foldl(a + b), 0.0)
-    temp = newImage(img.len, img[0].len)
+    denom = 0.0
+    temp = newImage(img.len, img[0].len, white)
+  for i in k:
+    for j in i: denom += j
   if denom == 0: denom = 1
   for x in 0..img.high - kh:
     for y in 0..img[0].high - kw:
@@ -62,7 +64,11 @@ proc applyKernel*(img: var Image, k: seq[seq[float]]) =
       temp[x,y].r = uint8 clamp(r / denom, 0, 255)
       temp[x,y].g = uint8 clamp(g / denom, 0, 255)
       temp[x,y].b = uint8 clamp(b / denom, 0, 255)
-  img = temp
+  for x, row in temp:
+    for y, pixel in row:
+      img[x,y].r = pixel.r
+      img[x,y].g = pixel.g
+      img[x,y].b = pixel.b
 
 proc quantize*(c: var Color, factor: uint8) =
   for i in 0..2: c[i] =
