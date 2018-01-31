@@ -49,6 +49,20 @@ iterator circle1*(x0, y0, r: int): Point =
       dec y
       p += 2 * (x - y) + 1
 
+iterator circle2*(x0, y0, r: int): Point =
+  var
+    x = o
+    y = r
+    d = (5 - r shl 2) shr 2
+  while x <= y:
+    circleRoutine()
+    inc x
+    if  d < 0:
+      d += (x shl 1) + 1
+    else:
+      dec y
+      d += (1 + x - y) shl 1
+
 iterator circleBres*(x0, y0, r: int): Point =
   var
     x = 0
@@ -69,7 +83,7 @@ proc drawCircle*(i: var Image, x0, y0, r: int, c = black) =
     i.draw(point, c)
 
 proc drawCircle*(i: var Image, a: Point, r: int, c = black) =
-  for point in circleBres(a.x, a.y, r):
+  for point in circle2(a.x, a.y, r):
     i.draw(point, c)
 
 proc drawFilledCircle*(i: var Image, a: Point, r: int, c = black) =
