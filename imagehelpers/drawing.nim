@@ -5,7 +5,7 @@ proc draw*(i: var Image, x, y: int, c: Color) =
   if (x,y).isInside i: i[x, y] = c
 
 proc draw*(i: var Image, p: Point, c: Color) =
-  if p.isInside i: i[p.x, p.y] = c
+  if p.isInside i: i[p] = c
 
 template circleRoutine: untyped =
     yield (x0 + x, y0 + y)
@@ -51,7 +51,7 @@ iterator circle1*(x0, y0, r: int): Point =
 
 iterator circle2*(x0, y0, r: int): Point =
   var
-    x = o
+    x = 0
     y = r
     d = (5 - r shl 2) shr 2
   while x <= y:

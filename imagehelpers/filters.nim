@@ -45,14 +45,11 @@ proc applyKernel*(img: var Image, k: seq[seq[float]]) =
     kh = k.len
     kw = k[0].len
   var
-    denom = 0.0
-    temp = newImage(img.len, img[0].len, white)
-  for i in k:
-    for j in i: denom += j
-  #denom = k.foldl(a + b.foldl(a + b), 0.0)
+    denom = k.foldl(a + b.foldl(a + b), 0.0)
+    temp = img
   if denom == 0: denom = 1
-  for x in 0..img.high - kh:
-    for y in 0..img[0].high - kw:
+  for x in 0..img.w - kh:
+    for y in 0..img.h - kw:
       var r, g, b = 0.0
       for j in 0..kh-1:
         for i in 0..kw-1:
@@ -65,15 +62,7 @@ proc applyKernel*(img: var Image, k: seq[seq[float]]) =
       temp[x,y].r = uint8 clamp(r / denom, 0, 255)
       temp[x,y].g = uint8 clamp(g / denom, 0, 255)
       temp[x,y].b = uint8 clamp(b / denom, 0, 255)
-  for x, row in temp:
-    for y, pixel in row:
-      img[x,y].r = pixel.r
-      img[x,y].g = pixel.g
-      img[x,y].b = pixel.b
-
-proc quantize*(c: var Color, factor: uint8) =
-  for i in 0..2: c[i] =
-    uint8(round(factor.float * c[i].float / 255.0) * float(255'u8 div factor))
+  img = temp
 
 template filterSmoothing*(i: var Image) = i.applyKernel kernelSmoothing
 template filterSharpening*(i: var Image) = i.applyKernel kernelSharpening
@@ -85,21 +74,22 @@ template filterMotionBlur*(i: var Image) = i.applyKernel kernelMotionBlur
 template filterGaussianBlur5*(i: var Image) = i.applyKernel kernelGaussianBlur5
 template filterUnsharpMasking*(i: var Image) = i.applyKernel kernelUnsharpMasking
 
+proc quantize*(c: var Color, factor: uint8) =
+  for i in 0..2: c[i] =
+    uint8(round(factor.float * c[i].float / 255.0) * float(255'u8 div factor))
+
 proc filterNegative*(image: var Image) =
-  for row in image.mitems:
-    for pixel in row.mitems:
+    for pixel in image.data.mitems:
       for value in pixel.mitems: value = 255'u8 - value
 
 proc filterGreyscale*(image: var Image) =
-  for row in image.mitems:
-    for pixel in row.mitems:
+    for pixel in image.data.mitems:
       pixel.*= uint8 round(pixel.r.float * 0.2126 +
                            pixel.g.float * 0.7152 +
                            pixel.b.float * 0.0722)
 
 proc filterSepia*(image: var Image) =
-  for row in image.mitems:
-    for pixel in row.mitems:
+    for pixel in image.data.mitems:
       let prev = pixel
       pixel.r = uint8 min(prev.r.float * 0.393 + prev.g.float * 0.769 + prev.b.float * 0.189, 255)
       pixel.g = uint8 min(prev.r.float * 0.349 + prev.g.float * 0.686 + prev.b.float * 0.168, 255)

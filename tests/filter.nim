@@ -1,4 +1,4 @@
 import ../imagehelpers/[base, filters]
-var image = loadImage4 "image.png"
+var image = loadImage "image.png"
 image.filterEdgeDetection
 image.saveImage "filtered.png"
