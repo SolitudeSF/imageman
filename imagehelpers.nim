@@ -1,2 +1,2 @@
-import imagehelpers/[base, drawing, filters]
-export base, drawing, filters
+import imagehelpers/[base, drawing, filters, resize]
+export base, drawing, filters, resize
