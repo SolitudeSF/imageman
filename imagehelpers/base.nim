@@ -11,8 +11,10 @@ type
 proc isInside*(p: Point, i: Image): bool = p.x >= 0 and p.y >= 0 and p.x < i.h and p.y < i.w
 
 template `[]`*(i: Image, x, y: int): Color = i.data[x + y * i.w]
+template `[]`*(i: Image, x: int): Color = i.data[x]
 template `[]`*(i: Image, p: Point): Color = i.data[p.x + p.y * i.w]
 template `[]=`*(i: var Image, x, y: int, c: Color) = i.data[x + y * i.w] = c
+template `[]=`*(i: var Image, x: int, c: Color) = i.data[x] = c
 template `[]=`*(i: var Image, p: Point, c: Color) = i.data[p.x + p.y * i.w] = c
 
 template `r`*(c: Color): uint8 = c[0]
@@ -58,19 +60,19 @@ proc randomColor*: Color = [uint8 random(0..255),
 proc isGreyscale*(c: Color): bool =
   c.r == c.g and c.r == c.b
 
-proc interpolate*(a, b: Color, x, L: int): Color =
-  result.r = uint8(a.r.float + x.float * (b.r.float - a.r.float) / L.float)
-  result.g = uint8(a.g.float + x.float * (b.g.float - a.g.float) / L.float)
-  result.b = uint8(a.b.float + x.float * (b.b.float - a.b.float) / L.float)
-  result.a = uint8(a.a.float + x.float * (b.a.float - a.a.float) / L.float)
+proc interpolate*(a, b: Color, x: float, L = 1.0): Color =
+  result.r = uint8(a.r.float + x * (b.r.float - a.r.float) / L)
+  result.g = uint8(a.g.float + x * (b.g.float - a.g.float) / L)
+  result.b = uint8(a.b.float + x * (b.b.float - a.b.float) / L)
+  result.a = uint8(a.a.float + x * (b.a.float - a.a.float) / L)
 
-proc newImage*(h, w: int, c: Color = white): Image =
-  result.data = newSeq[Color](h * w)
+proc newImage*(w, h: int, c: Color = white): Image =
+  result.data = newSeq[Color](w * h)
   result.h = h
   result.w = w
 
 proc strToImage*(str: string, w, h: int): Image =
- result = newImage(h, w)
+ result = newImage(w, h)
  let s = cast[seq[uint8]](str)
  for idx in 0..<h * w:
    for i in 0..3: result.data[idx][i] = s[idx * 4 + i]
