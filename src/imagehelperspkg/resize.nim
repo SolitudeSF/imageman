@@ -50,10 +50,10 @@ proc resizedBilinear*(img: Image, w, h: int): Image =
         c = img[id + img.w]
         d = img[id + img.w + 1]
       for t in 0..3:
-        result[i + j * w] = uint8(a[t].float * (1 - xd) * (1 - yd) +
-                                  b[t].float *      xd  * (1 - yd) +
-                                  c[t].float * (1 - xd) *      yd  +
-                                  d[t].float *      xd  *      yd)
+        result[i + j * w][t] = uint8(a[t].float * (1 - xd) * (1 - yd) +
+                                     b[t].float *      xd  * (1 - yd) +
+                                     c[t].float * (1 - xd) *      yd  +
+                                     d[t].float *      xd  *      yd)
 
 proc resizedTrilinear*(img: Image, w, h: int): Image =
   result = newImage(w, h)
