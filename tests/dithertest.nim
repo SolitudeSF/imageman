@@ -1,3 +1,3 @@
 import ../src/imagehelperspkg/[base, filters]
 
-var image = loadImage "image.png"
+var image = loadPNG "image.png"

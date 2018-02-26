@@ -5,7 +5,6 @@ author        = "SolitudeSF"
 description   = "Image manipulation helper functions"
 license       = "MIT"
 srcDir        = "src"
-bin           = @["imagehelpers"]
 
 # Dependencies
 
