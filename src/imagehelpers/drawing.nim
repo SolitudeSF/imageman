@@ -1,4 +1,4 @@
-import base
+import images, colors
 import math
 
 proc draw*(i: var Image, x, y: int, c: Color) =

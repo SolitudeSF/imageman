@@ -1,4 +1,4 @@
-import base
+import images, colors
 import math, sequtils
 
 const
@@ -67,8 +67,8 @@ proc applyKernel*(img: var Image, k: seq[seq[float]]) =
 template filterSmoothing*(i: var Image) = i.applyKernel kernelSmoothing
 template filterSharpening*(i: var Image) = i.applyKernel kernelSharpening
 template filterSharpen*(i: var Image) = i.applyKernel kernelSharpen
-template filterEdgeDetection*(i: var Image) = i.applyKernel kernelEdgeDetection3
 template filterRaised*(i: var Image) = i.applyKernel kernelRaised
+template filterEdgeDetection*(i: var Image) = i.applyKernel kernelEdgeDetection3
 template filterBoxBlur*(i: var Image) = i.applyKernel kernelBoxBlur
 template filterMotionBlur*(i: var Image) = i.applyKernel kernelMotionBlur
 template filterGaussianBlur5*(i: var Image) = i.applyKernel kernelGaussianBlur5
@@ -78,15 +78,15 @@ proc quantize*(c: var Color, factor: uint8) =
   for i in 0..2: c[i] =
     uint8(round(factor.float * c[i].float / 255.0) * float(255'u8 div factor))
 
-proc filterNegative*(image: var Image) =
-    for pixel in image.data.mitems:
-      for value in pixel.mitems: value = 255'u8 - value
-
 proc filterGreyscale*(image: var Image) =
     for pixel in image.data.mitems:
       pixel.*= uint8 round(pixel.r.float * 0.2126 +
                            pixel.g.float * 0.7152 +
                            pixel.b.float * 0.0722)
+
+proc filterNegative*(image: var Image) =
+    for pixel in image.data.mitems:
+      for value in pixel.mitems: value = 255'u8 - value
 
 proc filterSepia*(image: var Image) =
     for pixel in image.data.mitems:

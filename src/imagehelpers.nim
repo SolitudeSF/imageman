@@ -1,2 +1,2 @@
-import imagehelperspkg/[base, drawing, filters, resize]
-export base, drawing, filters, resize
+import imagehelpers/[images, colors, drawing, filters, resize]
+export images, colors, drawing, filters, resize

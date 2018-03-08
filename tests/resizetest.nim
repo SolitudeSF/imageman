@@ -1,4 +1,4 @@
-import ../src/imagehelperspkg/[base, resize]
+import ../src/imagehelpers/[images, resize]
 
 let
   image = loadPNG "image.png"

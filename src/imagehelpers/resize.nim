@@ -1,4 +1,4 @@
-import base
+import images, colors
 import math
 
 proc resizedNN*(img: Image, w, h: int): Image =

@@ -1,4 +1,4 @@
-import ../src/imagehelperspkg/[base, drawing]
+import ../src/imagehelpers/[images, drawing]
 
 #var image = newImage(1000, 1000)
 #image.drawCircle(200, 200, 150)

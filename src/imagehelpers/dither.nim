@@ -1,4 +1,4 @@
-import base, filters
+import images, colors, filters
 import math, sequtils
 
 proc addError(i: var Image, x, y: int, factor: float, r, g, b: float) =
