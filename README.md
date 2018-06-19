@@ -1,5 +1,9 @@
 # Imagehelpers
-Image manipulation framework
+Rudimentary image manipulation (((framework)))
+
+Some things may or may not work correctly.
+
+Some example usage in tests.
 
 ## Features
 - Easy manipulation of individual pixel components

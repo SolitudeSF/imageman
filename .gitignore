@@ -1,1 +1,3 @@
 nimcache
+*.png
+!tests/image.png

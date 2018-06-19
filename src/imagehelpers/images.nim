@@ -40,29 +40,3 @@ proc loadPNG*(file: string): Image =
 
 proc savePNG*(image: Image, file: string) =
   discard savePNG32(file, image.imageToPNG, image.w, image.h)
-
-proc loadFF*(file: string): Image =
-  var file = file.newFileStream
-  file.setPosition 2000
-  var
-    width  = 0'u32
-    height = 0'u32
-  discard file.readData(addr width, 4)
-  discard file.readData(addr height, 4)
-  echo width, " ", height
-  quit 0
-  #result = newImage(width, height)
-  #for i in 0..<width.int*height.int:
-    #result[i][0] = file.readInt16.uint8
-    #result[i][1] = file.readInt16.uint8
-    #result[i][2] = file.readInt16.uint8
-    #result[i][3] = file.readInt16.uint8
-
-proc saveFF*(image: Image, file: string) =
-  var file = file.newFileStream fmWrite
-  file.write "farbfeld"
-  file.write image.w.uint32
-  file.write image.h.uint32
-  for p in 0..image.data.high:
-    for c in 0..3:
-      file.write image[p][c].uint16

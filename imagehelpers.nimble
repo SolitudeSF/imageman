@@ -8,7 +8,7 @@ srcDir        = "src"
 
 # Dependencies
 
-requires "nim >= 0.17.2"
+requires "nim >= 0.18.0"
 requires "nimPNG"
 
 skipDirs = @["tests"]
