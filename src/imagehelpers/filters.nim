@@ -11,7 +11,7 @@ const
   kernelSharpen = @[@[ 0.0, -1.0,  0.0],
                     @[-1.0,  5.0, -1.0],
                     @[ 0.0, -1.0,  0.0]]
-  kernelEdgeDetection1= @[@[ 1.0, 0.0,-1.0],
+  kernelEdgeDetection = @[@[ 1.0, 0.0,-1.0],
                           @[ 0.0, 0.0, 0.0],
                           @[-1.0, 0.0, 1.0]]
   kernelEdgeDetection2 = @[@[0.0, 1.0, 0.0],
@@ -64,15 +64,20 @@ proc applyKernel*(img: var Image, k: seq[seq[float]]) =
       temp[x,y].b = uint8 clamp(b / denom, 0, 255)
   img = temp
 
-template filterSmoothing*(i: var Image) = i.applyKernel kernelSmoothing
-template filterSharpening*(i: var Image) = i.applyKernel kernelSharpening
-template filterSharpen*(i: var Image) = i.applyKernel kernelSharpen
-template filterRaised*(i: var Image) = i.applyKernel kernelRaised
-template filterEdgeDetection*(i: var Image) = i.applyKernel kernelEdgeDetection3
-template filterBoxBlur*(i: var Image) = i.applyKernel kernelBoxBlur
-template filterMotionBlur*(i: var Image) = i.applyKernel kernelMotionBlur
-template filterGaussianBlur5*(i: var Image) = i.applyKernel kernelGaussianBlur5
-template filterUnsharpMasking*(i: var Image) = i.applyKernel kernelUnsharpMasking
+template genFilter*(n): untyped =
+  template `filter n`*(i: var Image) = i.applyKernel `kernel n`
+
+genFilter Smoothing
+genFilter Sharpening
+genFilter Sharpen
+genFilter Raised
+genFilter EdgeDetection
+genFilter EdgeDetection2
+genFilter EdgeDetection3
+genFilter BoxBlur
+genFilter MotionBlur
+genFilter GaussianBlur5
+genFilter UnsharpMasking
 
 proc quantize*(c: var Color, factor: uint8) =
   for i in 0..2: c[i] =
