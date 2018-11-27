@@ -22,7 +22,7 @@ proc newImage*(w, h: SomeInteger, c: Color = white): Image =
   result.h = h.int
   result.w = w.int
 
-proc PNGToImage*(str: string, w, h: int): Image =
+proc pngToImage*(str: string, w, h: int): Image =
  result = newImage(w, h)
  let s = cast[seq[uint8]](str)
  for idx in 0..<h * w:
@@ -36,7 +36,7 @@ proc imageToPNG*(img: Image): string =
 
 proc loadPNG*(file: string): Image =
   let source = loadPNG32 file
-  source.data.PNGToImage(source.width, source.height)
+  source.data.pngToImage(source.width, source.height)
 
 proc savePNG*(image: Image, file: string) =
   discard savePNG32(file, image.imageToPNG, image.w, image.h)

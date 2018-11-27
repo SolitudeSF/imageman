@@ -80,9 +80,9 @@ proc quantize*(c: var Color, factor: uint8) =
 
 proc filterGreyscale*(image: var Image) =
     for pixel in image.data.mitems:
-      pixel.*= uint8 round(pixel.r.float * 0.2126 +
-                           pixel.g.float * 0.7152 +
-                           pixel.b.float * 0.0722)
+      pixel.all = uint8 round(pixel.r.float * 0.2126 +
+                              pixel.g.float * 0.7152 +
+                              pixel.b.float * 0.0722)
 
 proc filterNegative*(image: var Image) =
     for pixel in image.data.mitems:

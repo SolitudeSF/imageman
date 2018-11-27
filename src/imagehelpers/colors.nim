@@ -28,7 +28,7 @@ template `g=`*(c: var Color, i: uint8) = c[1] = i
 template `b=`*(c: var Color, i: uint8) = c[2] = i
 template `a=`*(c: var Color, i: uint8) = c[3] = i
 
-proc `.*=`*(c: var Color, i: uint8) =
+proc `all=`*(c: var Color, i: uint8) =
   c.r = i
   c.g = i
   c.b = i
