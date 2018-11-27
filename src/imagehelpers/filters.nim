@@ -2,45 +2,45 @@ import images, colors
 import math
 
 const
-  kernelSmoothing = @[@[1.0, 1.0, 1.0],
-                      @[1.0, 2.0, 1.0],
-                      @[1.0, 1.0, 1.0]]
-  kernelSharpening = @[@[-1.0, -1.0, -1.0],
-                       @[-1.0,  9.0, -1.0],
-                       @[-1.0, -1.0, -1.0]]
-  kernelSharpen = @[@[ 0.0, -1.0,  0.0],
-                    @[-1.0,  5.0, -1.0],
-                    @[ 0.0, -1.0,  0.0]]
-  kernelEdgeDetection = @[@[ 1.0, 0.0,-1.0],
-                          @[ 0.0, 0.0, 0.0],
-                          @[-1.0, 0.0, 1.0]]
-  kernelEdgeDetection2 = @[@[0.0, 1.0, 0.0],
-                           @[1.0,-4.0, 1.0],
-                           @[0.0, 1.0, 0.0]]
-  kernelEdgeDetection3 = @[@[-1.0, -1.0, -1.0],
-                           @[-1.0,  8.0, -1.0],
-                           @[-1.0, -1.0, -1.0]]
-  kernelRaised = @[@[0.0, 0.0,-2.0],
-                   @[0.0, 2.0, 0.0],
-                   @[1.0, 0.0, 0.0]]
-  kernelBoxBlur = @[@[1.0, 1.0, 1.0],
-                    @[1.0, 1.0, 1.0],
-                    @[1.0, 1.0, 1.0]]
-  kernelMotionBlur = @[@[0.0, 0.0, 1.0],
-                       @[0.0, 0.0, 0.0],
-                       @[1.0, 0.0, 0.0]]
-  kernelGaussianBlur5 = @[@[1.0,  4.0,  6.0,  4.0, 1.0],
-                          @[4.0, 16.0, 24.0, 16.0, 4.0],
-                          @[6.0, 24.0, 36.0, 24.0, 6.0],
-                          @[4.0, 16.0, 24.0, 16.0, 4.0],
-                          @[1.0,  4.0,  6.0,  4.0, 1.0]]
-  kernelUnsharpMasking = @[@[1.0,  4.0,   6.0,  4.0, 1.0],
-                           @[4.0, 16.0,  24.0, 16.0, 4.0],
-                           @[6.0, 24.0,-476.0, 24.0, 6.0],
-                           @[4.0, 16.0,  24.0, 16.0, 4.0],
-                           @[1.0,  4.0,   6.0,  4.0, 1.0]]
+  kernelSmoothing = [[1.0, 1.0, 1.0],
+                     [1.0, 2.0, 1.0],
+                     [1.0, 1.0, 1.0]]
+  kernelSharpening = [[-1.0, -1.0, -1.0],
+                      [-1.0,  9.0, -1.0],
+                      [-1.0, -1.0, -1.0]]
+  kernelSharpen = [[ 0.0, -1.0,  0.0],
+                   [-1.0,  5.0, -1.0],
+                   [ 0.0, -1.0,  0.0]]
+  kernelEdgeDetection = [[ 1.0, 0.0,-1.0],
+                         [ 0.0, 0.0, 0.0],
+                         [-1.0, 0.0, 1.0]]
+  kernelEdgeDetection2 = [[0.0, 1.0, 0.0],
+                          [1.0,-4.0, 1.0],
+                          [0.0, 1.0, 0.0]]
+  kernelEdgeDetection3 = [[-1.0, -1.0, -1.0],
+                          [-1.0,  8.0, -1.0],
+                          [-1.0, -1.0, -1.0]]
+  kernelRaised = [[0.0, 0.0,-2.0],
+                  [0.0, 2.0, 0.0],
+                  [1.0, 0.0, 0.0]]
+  kernelBoxBlur = [[1.0, 1.0, 1.0],
+                   [1.0, 1.0, 1.0],
+                   [1.0, 1.0, 1.0]]
+  kernelMotionBlur = [[0.0, 0.0, 1.0],
+                      [0.0, 0.0, 0.0],
+                      [1.0, 0.0, 0.0]]
+  kernelGaussianBlur5 = [[1.0,  4.0,  6.0,  4.0, 1.0],
+                         [4.0, 16.0, 24.0, 16.0, 4.0],
+                         [6.0, 24.0, 36.0, 24.0, 6.0],
+                         [4.0, 16.0, 24.0, 16.0, 4.0],
+                         [1.0,  4.0,  6.0,  4.0, 1.0]]
+  kernelUnsharpMasking = [[1.0,  4.0,   6.0,  4.0, 1.0],
+                          [4.0, 16.0,  24.0, 16.0, 4.0],
+                          [6.0, 24.0,-476.0, 24.0, 6.0],
+                          [4.0, 16.0,  24.0, 16.0, 4.0],
+                          [1.0,  4.0,   6.0,  4.0, 1.0]]
 
-func applyKernel*(img: var Image, k: seq[seq[float]]) =
+func applyKernel*(img: var Image, k: openArray[array | seq | openArray]) =
   let
     kh = k.len
     kw = k[0].len
@@ -62,12 +62,12 @@ func applyKernel*(img: var Image, k: seq[seq[float]]) =
           let
             rx = x + i
             ry = y + j
-          r += img[rx, ry].r.float * k[i][j]
-          g += img[rx, ry].g.float * k[i][j]
-          b += img[rx, ry].b.float * k[i][j]
-      temp[x,y].r = uint8 clamp(r / denom, 0, 255)
-      temp[x,y].g = uint8 clamp(g / denom, 0, 255)
-      temp[x,y].b = uint8 clamp(b / denom, 0, 255)
+          r += img[rx, ry][0].float * k[i][j]
+          g += img[rx, ry][1].float * k[i][j]
+          b += img[rx, ry][2].float * k[i][j]
+      temp[x,y][0] = uint8 clamp(r / denom, 0, 255)
+      temp[x,y][1] = uint8 clamp(g / denom, 0, 255)
+      temp[x,y][2] = uint8 clamp(b / denom, 0, 255)
   img = temp
 
 template genFilter(n): untyped =
