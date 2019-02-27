@@ -3,7 +3,7 @@ import os
 setCurrentDir getAppDir()
 
 let
-  image = loadPNG "image.png"
+  image = loadImage "image.png"
   down = image.resizedNN(1010, 777)
   up = image.resizedNN(0.666, 1.488)
   bil = image.resizedBilinear(2000, 600)

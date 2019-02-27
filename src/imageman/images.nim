@@ -1,5 +1,5 @@
 import sequtils, math, random, streams, endians
-import nimPNG
+import stb_image/[read, write]
 import colors
 
 type
@@ -22,19 +22,17 @@ func newImage*(w, h: Natural): Image =
   result.h = h.int
   result.w = w.int
 
-func pngToImage(str: string, w, h: int): Image =
- result = newImage(w, h)
- var str = str
- copyMem addr result.data[0], addr str[0], str.len
+proc loadImage*(file: string): Image =
+  var
+    w, h, channels: int
+    data = load(file, w, h, channels, RGBA)
+  result = newImage(w, h)
+  copyMem addr result.data[0], addr data[0], data.len
 
-func imageToPNG(img: Image): string =
- var data = img.data
- result = newString data.len * 4
- copyMem addr result[0], addr data[0], data.len * 4
+proc savePNG*(image: Image, file: string, strides = 0) =
+  if not writePNG(file, image.w, image.h, RGBA, cast[seq[byte]](image.data), strides):
+    raise newException(IOError, "Failed to write the image to " & file)
 
-proc loadPNG*(file: string): Image =
-  let source = loadPNG32 file
-  source.data.pngToImage(source.width, source.height)
-
-proc savePNG*(image: Image, file: string) =
-  discard savePNG32(file, image.imageToPNG, image.w, image.h)
+proc saveJPG*(image: Image, file: string, quality: range[1..100] = 95) =
+  if not writeJPG(file, image.w, image.h, RGBA, cast[seq[byte]](image.data), quality):
+    raise newException(IOError, "Failed to write the image to " & file)
