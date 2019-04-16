@@ -1,4 +1,6 @@
 import ../src/imagehelpers/[images, resize]
+import os
+setCurrentDir getAppDir()
 
 let
   image = loadPNG "image.png"
