@@ -1,10 +1,10 @@
 import images, colors
 import math
 
-proc draw*(i: var Image, x, y: int, c: Color) =
+func draw*(i: var Image, x, y: int, c: Color) =
   if (x,y).isInside i: i[x, y] = c
 
-proc draw*(i: var Image, p: Point, c: Color) =
+func draw*(i: var Image, p: Point, c: Color) =
   if p.isInside i: i[p] = c
 
 template circleRoutine: untyped =
@@ -78,15 +78,15 @@ iterator circleBres*(x0, y0, r: int): Point =
       y -= 1
     x += 1
 
-proc drawCircle*(i: var Image, x0, y0, r: int, c = black) =
+func drawCircle*(i: var Image, x0, y0, r: int, c = black) =
   for point in circle(x0, y0, r):
     i.draw(point, c)
 
-proc drawCircle*(i: var Image, a: Point, r: int, c = black) =
+func drawCircle*(i: var Image, a: Point, r: int, c = black) =
   for point in circle2(a.x, a.y, r):
     i.draw(point, c)
 
-proc drawFilledCircle*(i: var Image, a: Point, r: int, c = black) =
+func drawFilledCircle*(i: var Image, a: Point, r: int, c = black) =
   for x in a.x-r..a.x+r:
     for y in a.y-r..a.y+r:
       if (x-a.x)*(x-a.x)+(y-a.y)*(y-a.y) < r*r: i.draw((x,y), c)
@@ -130,19 +130,19 @@ iterator line*(x0, y0, x1, y1: int): Point =
         x0 += dx2
         y0 += dy2
 
-proc drawLine*(i: var Image, x0, y0, x1, y1: int, c = black) =
+func drawLine*(i: var Image, x0, y0, x1, y1: int, c = black) =
   for point in line(x0, y0, x1, y1):
     i.draw(point, c)
 
-proc drawLine*(i: var Image, a, b: Point, c = black) =
+func drawLine*(i: var Image, a, b: Point, c = black) =
   for point in line(a.x, a.y, b.x, b.y):
     i.draw(point, c)
 
-proc drawPolyline*(i: var Image, closed = false, color = black, points: varargs[Point]) =
+func drawPolyline*(i: var Image, closed = false, color = black, points: varargs[Point]) =
   for p in 1..points.high:
     i.drawLine(points[p-1], points[p], color)
   if closed: i.drawLine(points[^1], points[0], color)
 
-proc drawBrush*(i: var Image, a, b: Point, r = 10, c = black) =
+func drawBrush*(i: var Image, a, b: Point, r = 10, c = black) =
   for point in line(a.x, a.y, b.x, b.y):
     i.drawFilledCircle(point, r, c)

@@ -1,5 +1,5 @@
 import images, colors
-import math, sequtils
+import math
 
 const
   kernelSmoothing = @[@[1.0, 1.0, 1.0],
@@ -40,14 +40,20 @@ const
                            @[4.0, 16.0,  24.0, 16.0, 4.0],
                            @[1.0,  4.0,   6.0,  4.0, 1.0]]
 
-proc applyKernel*(img: var Image, k: seq[seq[float]]) =
+func applyKernel*(img: var Image, k: seq[seq[float]]) =
   let
     kh = k.len
     kw = k[0].len
   var
-    denom = k.foldl(a + b.foldl(a + b), 0.0)
+    denom = 0.0
     temp = img
-  if denom == 0: denom = 1
+
+  for i in k:
+    for j in i:
+      denom += j
+  if denom == 0:
+    denom = 1
+
   for x in 0..img.w - kh:
     for y in 0..img.h - kw:
       var r, g, b = 0.0
@@ -64,7 +70,7 @@ proc applyKernel*(img: var Image, k: seq[seq[float]]) =
       temp[x,y].b = uint8 clamp(b / denom, 0, 255)
   img = temp
 
-template genFilter*(n): untyped =
+template genFilter(n): untyped =
   template `filter n`*(i: var Image) = i.applyKernel `kernel n`
 
 genFilter Smoothing
@@ -79,21 +85,21 @@ genFilter MotionBlur
 genFilter GaussianBlur5
 genFilter UnsharpMasking
 
-proc quantize*(c: var Color, factor: uint8) =
+func quantize*(c: var Color, factor: uint8) =
   for i in 0..2: c[i] =
     uint8(round(factor.float * c[i].float / 255.0) * float(255'u8 div factor))
 
-proc filterGreyscale*(image: var Image) =
+func filterGreyscale*(image: var Image) =
     for pixel in image.data.mitems:
       pixel.all = uint8 round(pixel.r.float * 0.2126 +
                               pixel.g.float * 0.7152 +
                               pixel.b.float * 0.0722)
 
-proc filterNegative*(image: var Image) =
+func filterNegative*(image: var Image) =
     for pixel in image.data.mitems:
       for value in pixel.mitems: value = 255'u8 - value
 
-proc filterSepia*(image: var Image) =
+func filterSepia*(image: var Image) =
     for pixel in image.data.mitems:
       let prev = pixel
       pixel.r = uint8 min(prev.r.float * 0.393 + prev.g.float * 0.769 + prev.b.float * 0.189, 255)

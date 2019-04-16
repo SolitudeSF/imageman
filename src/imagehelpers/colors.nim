@@ -16,8 +16,8 @@ const
   magenta*     = [255'u8, 0'u8  , 255'u8, 255'u8]
   transparent* = [255'u8, 255'u8, 255'u8, 0'u8  ]
 
-proc min(a, b, c: float): float = min(a, min(b, c))
-proc max(a, b, c: float): float = max(a, max(b, c))
+func min*(a, b, c: float): float = min(a, min(b, c))
+func max*(a, b, c: float): float = max(a, max(b, c))
 
 template r*(c: Color): uint8 = c[0]
 template g*(c: Color): uint8 = c[1]
@@ -28,20 +28,20 @@ template `g=`*(c: var Color, i: uint8) = c[1] = i
 template `b=`*(c: var Color, i: uint8) = c[2] = i
 template `a=`*(c: var Color, i: uint8) = c[3] = i
 
-proc `all=`*(c: var Color, i: uint8) =
+func `all=`*(c: var Color, i: uint8) =
   c.r = i
   c.g = i
   c.b = i
 
-proc blendColorValue*(a, b: uint8, t: float): uint8 =
+func blendColorValue*(a, b: uint8, t: float): uint8 =
   uint8 sqrt((1.0 - t) * a.float * a.float + t * b.float * b.float)
 
-proc `+`*(a, b: Color): Color = [blendColorValue(a.r, b.r, 0.3),
+func `+`*(a, b: Color): Color = [blendColorValue(a.r, b.r, 0.3),
                                  blendColorValue(a.g, b.g, 0.3),
                                  blendColorValue(a.b, b.b, 0.3),
                                  a.a]
 
-proc `$`*(c: Color): string =
+func `$`*(c: Color): string =
   "(r: " & $c.r & ", g: " & $c.g & ", b: " & $c.b & ", a: " & $c.a & ")"
 
 proc randomColor*: Color = [uint8 rand(255),
@@ -49,10 +49,10 @@ proc randomColor*: Color = [uint8 rand(255),
                             uint8 rand(255),
                             255'u8]
 
-proc isGreyscale*(c: Color): bool =
+func isGreyscale*(c: Color): bool =
   c.r == c.g and c.r == c.b
 
-proc interpolate*(a, b: Color, x: float, L = 1.0): Color =
+func interpolate*(a, b: Color, x: float, L = 1.0): Color =
   result.r = uint8(a.r.float + x * (b.r.float - a.r.float) / L)
   result.g = uint8(a.g.float + x * (b.g.float - a.g.float) / L)
   result.b = uint8(a.b.float + x * (b.b.float - a.b.float) / L)

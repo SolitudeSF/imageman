@@ -8,10 +8,5 @@ srcDir        = "src"
 
 # Dependencies
 
-requires "nim >= 0.18.0"
+requires "nim >= 0.19.4"
 requires "nimPNG"
-
-skipDirs = @["tests"]
-
-task test, "run tests":
-  exec "nim c -r tests/tests"
