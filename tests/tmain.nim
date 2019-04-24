@@ -1,4 +1,4 @@
-import ../src/imagehelpers/[images, drawing, filters, dither]
+import ../src/imageman/[images, drawing, filters, dither]
 import os
 setCurrentDir getAppDir()
 var image = loadPNG "image.png"

@@ -2,9 +2,6 @@ import math, random
 
 type
   Color* = array[4, uint8]
-  ColorF = array[4, float]
-  ColorCMYK = array[5, float]
-  ColorHSL = array[4, float]
 
 const
   white*       = [255'u8, 255'u8, 255'u8, 255'u8]

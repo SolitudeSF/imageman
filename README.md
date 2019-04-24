@@ -1,4 +1,4 @@
-# Imagehelpers
+# Imageman
 Rudimentary image manipulation (((framework)))
 
 Some things may or may not work correctly.

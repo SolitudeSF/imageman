@@ -1,4 +1,4 @@
-import ../src/imagehelpers/[images, resize]
+import ../src/imageman/[images, resize]
 import os
 setCurrentDir getAppDir()
 

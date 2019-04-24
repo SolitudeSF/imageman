@@ -1,7 +1,7 @@
 import images, colors
 import math
 
-proc resizedNN*(img: Image, w, h: int): Image =
+func resizedNN*(img: Image, w, h: int): Image =
   result = newImage(w, h)
   let
     xr = img.w.float / w.float
@@ -12,7 +12,7 @@ proc resizedNN*(img: Image, w, h: int): Image =
       let x = int(i.float * xr)
       result[i, j] = img[x, y]
 
-proc resizedNN*(img: Image, w, h: float): Image =
+func resizedNN*(img: Image, w, h: float): Image =
   result = newImage(int(img.w.float*w), int(img.h.float*h))
   for j in 0..<result.h:
     let y = int(j.float / h)
@@ -20,7 +20,7 @@ proc resizedNN*(img: Image, w, h: float): Image =
       let x = int(i.float / w)
       result[i, j] = img[x, y]
 
-proc resizedNNi*(img: Image, w, h: int): Image =
+func resizedNNi*(img: Image, w, h: int): Image =
   result = newImage(w, h)
   let
     xr = (img.w shl 16) div w
@@ -31,7 +31,7 @@ proc resizedNNi*(img: Image, w, h: int): Image =
       let x = (i * xr) shr 16
       result[i, j] = img[x, y]
 
-proc resizedBilinear*(img: Image, w, h: int): Image =
+func resizedBilinear*(img: Image, w, h: int): Image =
   result = newImage(w, h)
   let
     xr = (img.w - 1).float / w.float
@@ -55,7 +55,7 @@ proc resizedBilinear*(img: Image, w, h: int): Image =
                                      c[t].float * (1 - xd) *      yd  +
                                      d[t].float *      xd  *      yd)
 
-proc resizedTrilinear*(img: Image, w, h: int): Image =
+func resizedTrilinear*(img: Image, w, h: int): Image =
   result = newImage(w, h)
   var
     sech = img.h
@@ -74,7 +74,7 @@ proc resizedTrilinear*(img: Image, w, h: int): Image =
   for i in 0..<w*h:
     result.data[i] = interpolate(first.data[i], second.data[i], 0.5)
 
-proc cubicFilter(a, b, c: float): float =
+func cubicFilter(a, b, c: float): float =
   let x = abs a
   if x < 1:
     ((12 - 9*b - 6*c) * pow(x, 3) + (12*b + 6*c - 18) * x * x + 6 - b - b) / 6
@@ -82,7 +82,7 @@ proc cubicFilter(a, b, c: float): float =
     ((6*b + 30*c) * x * x - (b + 6*c) * pow(x, 3) - (12*b + 48*c) * x + 8*b + 24*c) / 6
   else: 0
 
-proc resizedBicubic*(img: Image, w, h: int, B=1.0, C=0.0): Image =
+func resizedBicubic*(img: Image, w, h: int, B=1.0, C=0.0): Image =
   result = newImage(w, h)
   let
     xr = img.w.float / w.float
