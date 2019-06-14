@@ -4,12 +4,12 @@ import colors
 
 type
  Image* = object
-   w*, h*: int
+   width*, height*: int
    data*: seq[Color]
  Point* = tuple[x, y: int]
 
-func isInside*(p: Point, i: Image): bool = p.x >= 0 and p.y >= 0 and p.x < i.h and p.y < i.w
-
+template w*(i: Image): int = i.width
+template h*(i: Image): int = i.height
 template `[]`*(i: Image, x, y: int): Color = i.data[x + y * i.w]
 template `[]`*(i: Image, x: int): Color = i.data[x]
 template `[]`*(i: Image, p: Point): Color = i.data[p.x + p.y * i.w]
@@ -17,10 +17,12 @@ template `[]=`*(i: var Image, x, y: int, c: Color) = i.data[x + y * i.w] = c
 template `[]=`*(i: var Image, x: int, c: Color) = i.data[x] = c
 template `[]=`*(i: var Image, p: Point, c: Color) = i.data[p.x + p.y * i.w] = c
 
+func isInside*(p: Point, i: Image): bool = p.x >= 0 and p.y >= 0 and p.x < i.h and p.y < i.w
+
 func newImage*(w, h: Natural): Image =
   result.data = newSeq[Color](w * h)
-  result.h = h.int
-  result.w = w.int
+  result.height = h
+  result.width = w
 
 proc loadImage*(file: string): Image =
   var
