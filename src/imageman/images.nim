@@ -24,15 +24,13 @@ func newImage*(w, h: Natural): Image =
 
 func pngToImage(str: string, w, h: int): Image =
  result = newImage(w, h)
- let s = cast[seq[uint8]](str)
- for idx in 0..<h * w:
-   for i in 0..3: result.data[idx][i] = s[idx * 4 + i]
+ var str = str
+ copyMem addr result.data[0], addr str[0], str.len
 
 func imageToPNG(img: Image): string =
- var res = newSeq[uint8]()
- for pixel in img.data:
-   for value in pixel: res.add value
- result = cast[string](res)
+ var data = img.data
+ result = newString data.len * 4
+ copyMem addr result[0], addr data[0], data.len * 4
 
 proc loadPNG*(file: string): Image =
   let source = loadPNG32 file
