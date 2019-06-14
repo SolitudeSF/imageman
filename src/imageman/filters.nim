@@ -97,7 +97,9 @@ func filterGreyscale*(image: var Image) =
 
 func filterNegative*(image: var Image) =
     for pixel in image.data.mitems:
-      for value in pixel.mitems: value = 255'u8 - value
+      pixel.r = 255'u8 - pixel.r
+      pixel.g = 255'u8 - pixel.g
+      pixel.b = 255'u8 - pixel.b
 
 func filterSepia*(image: var Image) =
     for pixel in image.data.mitems:
