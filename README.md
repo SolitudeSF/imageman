@@ -15,7 +15,7 @@ To have some boilerplate for recreative programming with images.
 - Easy manipulation of individual pixel components
 - Image loading/saving
     - [x] PNG
-    - [ ] JPG
+    - [X] JPG
     - [ ] BMP
     - [ ] FF
 - Resizing
