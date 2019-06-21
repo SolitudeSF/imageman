@@ -7,18 +7,20 @@ func resizedNN*(img: Image, w, h: int): Image =
     xr = img.w.float / w.float
     yr = img.h.float / h.float
   for j in 0..<h:
-    let y = int(j.float * yr)
+    let y = int(j.float * yr) * img.w
+    let j = j * w
     for i in 0..<w:
       let x = int(i.float * xr)
-      result[i, j] = img[x, y]
+      result[i + j] = img[x + y]
 
 func resizedNN*(img: Image, w, h: float): Image =
-  result = newImage(int(img.w.float*w), int(img.h.float*h))
+  result = newImage(int(img.w.float * w), int(img.h.float * h))
   for j in 0..<result.h:
-    let y = int(j.float / h)
+    let y = int(j.float / h) * img.w
+    let j = j * result.w
     for i in 0..<result.w:
       let x = int(i.float / w)
-      result[i, j] = img[x, y]
+      result[i + j] = img[x + y]
 
 func resizedNNi*(img: Image, w, h: int): Image =
   result = newImage(w, h)
@@ -26,10 +28,11 @@ func resizedNNi*(img: Image, w, h: int): Image =
     xr = (img.w shl 16) div w
     yr = (img.h shl 16) div h
   for j in 0..<h:
-    let y = (j * yr) shr 16
+    let y = ((j * yr) shr 16) * img.w
+    let j = j * w
     for i in 0..<w:
       let x = (i * xr) shr 16
-      result[i, j] = img[x, y]
+      result[i + j] = img[x + y]
 
 func resizedBilinear*(img: Image, w, h: int): Image =
   result = newImage(w, h)
@@ -91,6 +94,7 @@ func resizedBicubic*(img: Image, w, h: int, B=1.0, C=0.0): Image =
     let
       oy = int(yr * j.float)
       dy = yr * j.float - oy.float
+      jw = j * w
     for i in 0..<w:
       let
         ox = int(xr * i.float)
@@ -112,4 +116,4 @@ func resizedBicubic*(img: Image, w, h: int, B=1.0, C=0.0): Image =
             nr += int(p.r.float * Bmdx * Bdyn)
             ng += int(p.g.float * Bmdx * Bdyn)
             nb += int(p.b.float * Bmdx * Bdyn)
-      result[i, j] = [uint8 nr, uint8 ng, uint8 nb, img[int(i.float * xr), int(j.float * yr)].a]
+      result[i + jw] = [uint8 nr, uint8 ng, uint8 nb, img[int(i.float * xr), int(j.float * yr)].a]
