@@ -31,6 +31,13 @@ proc loadImage*(file: string): Image =
   result = newImage(w, h)
   copyMem addr result.data[0], addr data[0], data.len
 
+proc loadImageFromMemory*(buffer: seq[byte]): Image =
+  var
+    w, h, channels: int
+    data = loadFromMemory(buffer, w, h, channels, RGBA)
+  result = newImage(w, h)
+  copyMem addr result.data[0], addr data[0], data.len
+
 proc savePNG*(image: Image, file: string, strides = 0) =
   if not writePNG(file, image.w, image.h, RGBA, cast[seq[byte]](image.data), strides):
     raise newException(IOError, "Failed to write the image to " & file)
@@ -38,3 +45,9 @@ proc savePNG*(image: Image, file: string, strides = 0) =
 proc saveJPG*(image: Image, file: string, quality: range[1..100] = 95) =
   if not writeJPG(file, image.w, image.h, RGBA, cast[seq[byte]](image.data), quality):
     raise newException(IOError, "Failed to write the image to " & file)
+
+proc writePNG*(image: Image, strides = 0): seq[byte] =
+  write.writePNG(image.w, image.h, RGBA, cast[seq[byte]](image.data), strides)
+
+proc writeJPG*(image: Image, quality: range[1..100] = 95): seq[byte] =
+  write.writeJPG(image.w, image.h, RGBA, cast[seq[byte]](image.data), quality)

@@ -1,8 +1,10 @@
 import ../src/imageman/[images, drawing, filters, dither]
 import os
 setCurrentDir getAppDir()
-var image = loadImage "image.png"
+let data = readFile "image.png"
+var image = loadImageFromMemory(cast[seq[byte]](data))
 image.dither burkeDist
 image.filterBoxBlur
 image.drawCircle(400, 400, 200)
-image.savePNG "result.png"
+let outdata = image.writePNG
+"result.png".writeFile cast[string](outdata)
