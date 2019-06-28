@@ -11,6 +11,9 @@ To have some boilerplate for recreative programming with images.
 ## Installation
 `nimble install imageman`
 
+## `imagemanSafe` flag
+Enables safety checks on per-pixel operations (`[]`, `[]=`), to prevent illegal array access
+
 ## Features
 - Easy manipulation of individual pixel components
 - Image loading/saving

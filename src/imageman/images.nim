@@ -10,16 +10,47 @@ type
   Rect* = object
     x*, y*, w*, h*: int
 
+func `in`*(p: Point, i: Image): bool = p.x >= 0 and p.y >= 0 and
+                                       p.x < i.height and p.y < i.width
+
 template w*(i: Image): int = i.width
 template h*(i: Image): int = i.height
-template `[]`*(i: Image, x, y: int): Color = i.data[x + y * i.w]
-template `[]`*(i: Image, x: int): Color = i.data[x]
-template `[]`*(i: Image, p: Point): Color = i.data[p.x + p.y * i.w]
-template `[]=`*(i: var Image, x, y: int, c: Color) = i.data[x + y * i.w] = c
-template `[]=`*(i: var Image, x: int, c: Color) = i.data[x] = c
-template `[]=`*(i: var Image, p: Point, c: Color) = i.data[p.x + p.y * i.w] = c
 
-func `in`*(p: Point, i: Image): bool = p.x >= 0 and p.y >= 0 and p.x < i.h and p.y < i.w
+template `[]`*(i: Image, x, y: int): Color =
+  when defined(imagemanSafe):
+    if (x, y) in i: i.data[x + y * i.w]
+  else:
+    i.data[x + y * i.w]
+
+template `[]`*(i: Image, x: int): Color =
+  when defined(imagemanSafe):
+    if x < i.data.len: i.data[x]
+  else:
+    i.data[x]
+
+template `[]`*(i: Image, p: Point): Color =
+  when defined(imagemanSafe):
+    if p in i: i.data[p.x + p.y * i.w]
+  else:
+    i.data[p.x + p.y * i.w]
+
+template `[]=`*(i: var Image, x, y: int, c: Color) =
+  when defined(imagemanSafe):
+    if (x, y) in i: i.data[x + y * i.w] = c
+  else:
+    i.data[x + y * i.w] = c
+
+template `[]=`*(i: var Image, x: int, c: Color) =
+  when defined(imagemanSafe):
+    if x < i.data.len: i.data[x] = c
+  else:
+    i.data[x] = c
+
+template `[]=`*(i: var Image, p: Point, c: Color) =
+  when defined(imagemanSafe):
+    if p in i: i.data[p.x + p.y * i.w] = c
+  else:
+    i.data[p.x + p.y * i.w] = c
 
 func toRect*(a, b: Point): Rect = Rect(x: a.x, y: a.y, w: b.x - a.x, h: b.y - a.y)
 

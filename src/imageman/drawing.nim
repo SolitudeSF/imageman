@@ -1,12 +1,6 @@
 import images, colors
 import math
 
-func draw*(i: var Image, x, y: int, c: Color) =
-  if (x,y) in i: i[x, y] = c
-
-func draw*(i: var Image, p: Point, c: Color) =
-  if p in i: i[p] = c
-
 template circleRoutine: untyped =
   yield (x0 + x, y0 + y)
   yield (x0 + y, y0 + x)
@@ -80,16 +74,21 @@ iterator circleBres*(x0, y0, r: int): Point =
 
 func drawCircle*(i: var Image, x0, y0, r: int, c = black) =
   for point in circle(x0, y0, r):
-    i.draw(point, c)
+    i[point] = c
 
 func drawCircle*(i: var Image, a: Point, r: int, c = black) =
-  for point in circle2(a.x, a.y, r):
-    i.draw(point, c)
+  for point in circle(a.x, a.y, r):
+    i[point] = c
 
 func drawFilledCircle*(i: var Image, a: Point, r: int, c = black) =
-  for x in a.x-r..a.x+r:
-    for y in a.y-r..a.y+r:
-      if (x-a.x)*(x-a.x)+(y-a.y)*(y-a.y) < r*r: i.draw((x,y), c)
+  for y in a.y - r..a.y + r:
+    let
+      yw = y * i.w
+      ya = (y - a.y) * (y - a.y)
+      r2 = r * r
+    for x in a.x - r..a.x + r:
+      if (x - a.x) * (x - a.x) + ya < r2:
+        i[yw + x] = c
 
 iterator line*(x0, y0, x1, y1: int): Point =
   var
@@ -132,11 +131,11 @@ iterator line*(x0, y0, x1, y1: int): Point =
 
 func drawLine*(i: var Image, x0, y0, x1, y1: int, c = black) =
   for point in line(x0, y0, x1, y1):
-    i.draw(point, c)
+    i[point] = c
 
 func drawLine*(i: var Image, a, b: Point, c = black) =
   for point in line(a.x, a.y, b.x, b.y):
-    i.draw(point, c)
+    i[point] = c
 
 func drawPolyline*(i: var Image, closed = false, color = black, points: varargs[Point]) =
   for p in 1..points.high:
