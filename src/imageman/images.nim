@@ -24,6 +24,15 @@ func newImage*(w, h: Natural): Image =
   result.height = h
   result.width = w
 
+func copyRegion*(image: Image, x, y, w, h: int): Image =
+  result = newImage(w, h)
+  for i in 0..<h:
+    let
+      iw = i * w
+      iyw = (i + y) * image.w
+    for j in 0..<w:
+      result[iw + j] = image[iyw + j + x]
+
 proc loadImage*(file: string): Image =
   var
     w, h, channels: int
