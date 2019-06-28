@@ -23,6 +23,8 @@ func `in`*(p: Point, i: Image): bool = p.x >= 0 and p.y >= 0 and p.x < i.h and p
 
 func toRect*(a, b: Point): Rect = Rect(x: a.x, y: a.y, w: b.x - a.x, h: b.y - a.y)
 
+func newRect*(x, y, w, h: int): Rect = Rect(x: x, y: y, w: w, h: h)
+
 func newImage*(w, h: Natural): Image =
   result.data = newSeq[Color](w * h)
   result.height = h
@@ -45,6 +47,22 @@ func copyRegion*(image: Image, r: Rect): Image =
       iyw = (i + r.y) * image.width
     for j in 0..<r.w:
       result[iw + j] = image[iyw + j + r.x]
+
+func blit*(dest: var Image, src: Image, x, y: int) =
+  for i in 0..<src.height:
+    let
+      idest = (i + y) * dest.width
+      isrc = i * src.width
+    for j in 0..<src.width:
+      dest[idest + j + x] = src[isrc + j]
+
+func blit*(dest: var Image, src: Image, x, y: int, rect: Rect) =
+  for i in 0..<rect.h:
+    let
+      idest = (i + y) * dest.width
+      isrc = (i + rect.y) * src.width
+    for j in 0..<rect.w:
+      dest[idest + j + x] = src[isrc + j + rect.x]
 
 proc loadImage*(file: string): Image =
   var
