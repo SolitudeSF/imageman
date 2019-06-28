@@ -3,10 +3,12 @@ import stb_image/[read, write]
 import colors
 
 type
- Image* = object
-   width*, height*: int
-   data*: seq[Color]
- Point* = tuple[x, y: int]
+  Image* = object
+    width*, height*: int
+    data*: seq[Color]
+  Point* = tuple[x, y: int]
+  Rect* = object
+    x*, y*, w*, h*: int
 
 template w*(i: Image): int = i.width
 template h*(i: Image): int = i.height
@@ -18,6 +20,8 @@ template `[]=`*(i: var Image, x: int, c: Color) = i.data[x] = c
 template `[]=`*(i: var Image, p: Point, c: Color) = i.data[p.x + p.y * i.w] = c
 
 func `in`*(p: Point, i: Image): bool = p.x >= 0 and p.y >= 0 and p.x < i.h and p.y < i.w
+
+func toRect*(a, b: Point): Rect = Rect(x: a.x, y: a.y, w: b.x - a.x, h: b.y - a.y)
 
 func newImage*(w, h: Natural): Image =
   result.data = newSeq[Color](w * h)
@@ -32,6 +36,15 @@ func copyRegion*(image: Image, x, y, w, h: int): Image =
       iyw = (i + y) * image.width
     for j in 0..<w:
       result[iw + j] = image[iyw + j + x]
+
+func copyRegion*(image: Image, r: Rect): Image =
+  result = newImage(r.w, r.h)
+  for i in 0..<r.h:
+    let
+      iw = i * r.w
+      iyw = (i + r.y) * image.width
+    for j in 0..<r.w:
+      result[iw + j] = image[iyw + j + r.x]
 
 proc loadImage*(file: string): Image =
   var
