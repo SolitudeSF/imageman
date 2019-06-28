@@ -17,7 +17,7 @@ template `[]=`*(i: var Image, x, y: int, c: Color) = i.data[x + y * i.w] = c
 template `[]=`*(i: var Image, x: int, c: Color) = i.data[x] = c
 template `[]=`*(i: var Image, p: Point, c: Color) = i.data[p.x + p.y * i.w] = c
 
-func isInside*(p: Point, i: Image): bool = p.x >= 0 and p.y >= 0 and p.x < i.h and p.y < i.w
+func `in`*(p: Point, i: Image): bool = p.x >= 0 and p.y >= 0 and p.x < i.h and p.y < i.w
 
 func newImage*(w, h: Natural): Image =
   result.data = newSeq[Color](w * h)
@@ -29,7 +29,7 @@ func copyRegion*(image: Image, x, y, w, h: int): Image =
   for i in 0..<h:
     let
       iw = i * w
-      iyw = (i + y) * image.w
+      iyw = (i + y) * image.width
     for j in 0..<w:
       result[iw + j] = image[iyw + j + x]
 

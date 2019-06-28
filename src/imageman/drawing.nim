@@ -2,20 +2,20 @@ import images, colors
 import math
 
 func draw*(i: var Image, x, y: int, c: Color) =
-  if (x,y).isInside i: i[x, y] = c
+  if (x,y) in i: i[x, y] = c
 
 func draw*(i: var Image, p: Point, c: Color) =
-  if p.isInside i: i[p] = c
+  if p in i: i[p] = c
 
 template circleRoutine: untyped =
-    yield (x0 + x, y0 + y)
-    yield (x0 + y, y0 + x)
-    yield (x0 - y, y0 + x)
-    yield (x0 - x, y0 + y)
-    yield (x0 - x, y0 - y)
-    yield (x0 - y, y0 - x)
-    yield (x0 + y, y0 - x)
-    yield (x0 + x, y0 - y)
+  yield (x0 + x, y0 + y)
+  yield (x0 + y, y0 + x)
+  yield (x0 - y, y0 + x)
+  yield (x0 - x, y0 + y)
+  yield (x0 - x, y0 - y)
+  yield (x0 - y, y0 - x)
+  yield (x0 + y, y0 - x)
+  yield (x0 + x, y0 - y)
 
 iterator circle*(x0, y0, r: int): Point =
   var
