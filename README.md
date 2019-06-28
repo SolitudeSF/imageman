@@ -19,7 +19,8 @@ Enables safety checks on per-pixel operations (`[]`, `[]=`), to prevent illegal 
 - Image loading/saving
     - [x] PNG
     - [X] JPG
-    - [ ] BMP
+    - [x] BMP
+    - [x] TGA
     - [ ] FF
 - Resizing
     - [x] Nearest neighbour

@@ -117,8 +117,22 @@ proc saveJPG*(image: Image, file: string, quality: range[1..100] = 95) =
   if not writeJPG(file, image.w, image.h, RGBA, cast[seq[byte]](image.data), quality):
     raise newException(IOError, "Failed to write the image to " & file)
 
+proc saveBMP*(image: Image, file: string) =
+  if not writeBMP(file, image.w, image.h, RGBA, cast[seq[byte]](image.data)):
+    raise newException(IOError, "Failed to write the image to " & file)
+
+proc saveTGA*(image: Image, file: string, useRLE = true) =
+  if not writeTGA(file, image.w, image.h, RGBA, cast[seq[byte]](image.data), useRLE):
+    raise newException(IOError, "Failed to write the image to " & file)
+
 proc writePNG*(image: Image, strides = 0): seq[byte] =
   write.writePNG(image.w, image.h, RGBA, cast[seq[byte]](image.data), strides)
 
 proc writeJPG*(image: Image, quality: range[1..100] = 95): seq[byte] =
   write.writeJPG(image.w, image.h, RGBA, cast[seq[byte]](image.data), quality)
+
+proc writeBMP*(image: Image): seq[byte] =
+  write.writeBMP(image.w, image.h, RGBA, cast[seq[byte]](image.data))
+
+proc writeTGA*(image: Image, useRLE = true): seq[byte] =
+  write.writeTGA(image.w, image.h, RGBA, cast[seq[byte]](image.data), useRLE)

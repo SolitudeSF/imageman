@@ -8,5 +8,4 @@ image.filterBoxBlur
 image.drawFilledCircle((400, 400), 200)
 let p = image.copyRegion(toRect((image.w - 500, image.h - 500), (image.w, image.h)))
 image.blit p, 100, 100, newRect(100, 100, 200, 200)
-let outdata = image.writePNG
-"result.png".writeFile cast[string](outdata)
+image.saveTGA "result.tga"
