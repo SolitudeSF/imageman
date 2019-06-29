@@ -2,7 +2,7 @@ import images, colors
 import math
 
 func resizedNN*(img: Image, w, h: int): Image =
-  result = newImage(w, h)
+  result = initImage(w, h)
   let
     xr = img.w.float / w.float
     yr = img.h.float / h.float
@@ -14,7 +14,7 @@ func resizedNN*(img: Image, w, h: int): Image =
       result[i + j] = img[x + y]
 
 func resizedNN*(img: Image, w, h: float): Image =
-  result = newImage(int(img.w.float * w), int(img.h.float * h))
+  result = initImage(int(img.w.float * w), int(img.h.float * h))
   for j in 0..<result.h:
     let y = int(j.float / h) * img.w
     let j = j * result.w
@@ -23,7 +23,7 @@ func resizedNN*(img: Image, w, h: float): Image =
       result[i + j] = img[x + y]
 
 func resizedNNi*(img: Image, w, h: int): Image =
-  result = newImage(w, h)
+  result = initImage(w, h)
   let
     xr = (img.w shl 16) div w
     yr = (img.h shl 16) div h
@@ -35,7 +35,7 @@ func resizedNNi*(img: Image, w, h: int): Image =
       result[i + j] = img[x + y]
 
 func resizedBilinear*(img: Image, w, h: int): Image =
-  result = newImage(w, h)
+  result = initImage(w, h)
   let
     xr = (img.w - 1).float / w.float
     yr = (img.h - 1).float / h.float
@@ -59,7 +59,7 @@ func resizedBilinear*(img: Image, w, h: int): Image =
                                      d[t].float *      xd  *      yd)
 
 func resizedTrilinear*(img: Image, w, h: int): Image =
-  result = newImage(w, h)
+  result = initImage(w, h)
   var
     sech = img.h
     secw = img.w
@@ -86,7 +86,7 @@ func cubicFilter(a, b, c: float): float =
   else: 0
 
 func resizedBicubic*(img: Image, w, h: int, B=1.0, C=0.0): Image =
-  result = newImage(w, h)
+  result = initImage(w, h)
   let
     xr = img.w.float / w.float
     yr = img.h.float / h.float

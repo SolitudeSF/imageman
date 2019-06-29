@@ -10,15 +10,20 @@ type
   Rect* = object
     x*, y*, w*, h*: int
 
-func `in`*(p: Point, i: Image): bool = p.x >= 0 and p.y >= 0 and
-                                       p.x < i.height and p.y < i.width
+func contains*(i: Image, p: Point): bool =
+  p.x >= 0 and p.y >= 0 and p.x < i.height and p.y < i.width
+
+func contains*(i: Image, x, y: int): bool =
+  x >= 0 and y >= 0 and x < i.height and y < i.width
+
+template `in`*(p: Point, i: Image): bool = i.contains p
 
 template w*(i: Image): int = i.width
 template h*(i: Image): int = i.height
 
 template `[]`*(i: Image, x, y: int): Color =
   when defined(imagemanSafe):
-    if (x, y) in i: i.data[x + y * i.w]
+    if i.contains(x, y): i.data[x + y * i.w]
   else:
     i.data[x + y * i.w]
 
@@ -36,7 +41,7 @@ template `[]`*(i: Image, p: Point): Color =
 
 template `[]=`*(i: var Image, x, y: int, c: Color) =
   when defined(imagemanSafe):
-    if (x, y) in i: i.data[x + y * i.w] = c
+    if i.contains(x, y): i.data[x + y * i.w] = c
   else:
     i.data[x + y * i.w] = c
 
@@ -52,61 +57,43 @@ template `[]=`*(i: var Image, p: Point, c: Color) =
   else:
     i.data[p.x + p.y * i.w] = c
 
-func toRect*(a, b: Point): Rect = Rect(x: a.x, y: a.y, w: b.x - a.x, h: b.y - a.y)
+func initRect*(x, y, w, h: int): Rect = Rect(x: x, y: y, w: w, h: h)
 
-func newRect*(x, y, w, h: int): Rect = Rect(x: x, y: y, w: w, h: h)
+func toRect*(a, b: Point): Rect = initRect(a.x, a.y, b.x - a.x, b.y - a.y)
 
-func newImage*(w, h: Natural): Image =
+func initImage*(w, h: Natural): Image =
   result.data = newSeq[Color](w * h)
   result.height = h
   result.width = w
 
 func copyRegion*(image: Image, x, y, w, h: int): Image =
-  result = newImage(w, h)
+  result = initImage(w, h)
   for i in 0..<h:
-    let
-      iw = i * w
-      iyw = (i + y) * image.width
-    for j in 0..<w:
-      result[iw + j] = image[iyw + j + x]
+    copyMem addr result[i * w], unsafeAddr image[x, i + y], w * sizeof(Color)
 
 func copyRegion*(image: Image, r: Rect): Image =
-  result = newImage(r.w, r.h)
-  for i in 0..<r.h:
-    let
-      iw = i * r.w
-      iyw = (i + r.y) * image.width
-    for j in 0..<r.w:
-      result[iw + j] = image[iyw + j + r.x]
+  copyRegion(image, r.x, r.y, r.w, r.h)
 
 func blit*(dest: var Image, src: Image, x, y: int) =
   for i in 0..<src.height:
-    let
-      idest = (i + y) * dest.width
-      isrc = i * src.width
-    for j in 0..<src.width:
-      dest[idest + j + x] = src[isrc + j]
+    copyMem addr dest[x, i + y], unsafeAddr src[0, i], src.width * sizeof(Color)
 
 func blit*(dest: var Image, src: Image, x, y: int, rect: Rect) =
   for i in 0..<rect.h:
-    let
-      idest = (i + y) * dest.width
-      isrc = (i + rect.y) * src.width
-    for j in 0..<rect.w:
-      dest[idest + j + x] = src[isrc + j + rect.x]
+    copyMem addr dest[x, i + y], unsafeAddr src[rect.x, i + rect.y], rect.w * sizeof(Color)
 
 proc loadImage*(file: string): Image =
   var
     w, h, channels: int
     data = load(file, w, h, channels, RGBA)
-  result = newImage(w, h)
+  result = initImage(w, h)
   copyMem addr result.data[0], addr data[0], data.len
 
 proc loadImageFromMemory*(buffer: seq[byte]): Image =
   var
     w, h, channels: int
     data = loadFromMemory(buffer, w, h, channels, RGBA)
-  result = newImage(w, h)
+  result = initImage(w, h)
   copyMem addr result.data[0], addr data[0], data.len
 
 proc savePNG*(image: Image, file: string, strides = 0) =

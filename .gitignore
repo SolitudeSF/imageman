@@ -2,6 +2,6 @@ nimcache
 *.png
 *.jpg
 *.tga
-!tests/image.png
+!tests/image.jpg
 tests/t*
 !tests/t*.nim
