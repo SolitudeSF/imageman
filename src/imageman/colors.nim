@@ -46,6 +46,11 @@ proc randomColor*: Color = [uint8 rand(255),
                             uint8 rand(255),
                             255'u8]
 
+func randomColor*(r: var Rand): Color = [uint8 r.rand(255),
+                                         uint8 r.rand(255),
+                                         uint8 r.rand(255),
+                                         255'u8]
+
 func isGreyscale*(c: Color): bool =
   c.r == c.g and c.r == c.b
 
