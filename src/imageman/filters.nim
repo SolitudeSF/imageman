@@ -89,11 +89,16 @@ func quantize*(c: var Color, factor: uint8) =
   c[1] = uint8(round(factor.float * c[1].float / 255.0) * float(255'u8 div factor))
   c[2] = uint8(round(factor.float * c[2].float / 255.0) * float(255'u8 div factor))
 
-func quantized*(c: Color, factor: uint8): Color =
-  [uint8(round(factor.float * c[0].float / 255.0) * float(255'u8 div factor)),
-   uint8(round(factor.float * c[1].float / 255.0) * float(255'u8 div factor)),
-   uint8(round(factor.float * c[2].float / 255.0) * float(255'u8 div factor)),
-   c[3]]
+func quantized*[T: Color](c: T, factor: uint8): T =
+  when T is ColorRGB:
+    [uint8(round(factor.float * c[0].float / 255.0) * float(255'u8 div factor)),
+     uint8(round(factor.float * c[1].float / 255.0) * float(255'u8 div factor)),
+     uint8(round(factor.float * c[2].float / 255.0) * float(255'u8 div factor))]
+  else:
+    [uint8(round(factor.float * c[0].float / 255.0) * float(255'u8 div factor)),
+     uint8(round(factor.float * c[1].float / 255.0) * float(255'u8 div factor)),
+     uint8(round(factor.float * c[2].float / 255.0) * float(255'u8 div factor)),
+     c[3]]
 
 func filterGreyscale*(image: var Image) =
   for pixel in image.data.mitems:

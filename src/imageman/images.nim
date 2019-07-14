@@ -3,9 +3,9 @@ import stb_image/[read, write]
 import colors
 
 type
-  Image* = object
+  Image*[T: Color] = object
     width*, height*: int
-    data*: seq[Color]
+    data*: seq[T]
   Point* = tuple[x, y: int]
   Rect* = object
     x*, y*, w*, h*: int
@@ -61,65 +61,69 @@ func initRect*(x, y, w, h: int): Rect = Rect(x: x, y: y, w: w, h: h)
 
 func toRect*(a, b: Point): Rect = initRect(a.x, a.y, b.x - a.x, b.y - a.y)
 
-func initImage*(w, h: Natural): Image =
-  result.data = newSeq[Color](w * h)
-  result.height = h
-  result.width = w
+func initImage*[T: Color](w, h: Natural): Image[T] =
+  Image[T](data: newSeq[T](w * h), height: h, width: w)
 
-func copyRegion*(image: Image, x, y, w, h: int): Image =
-  result = initImage(w, h)
+func copyRegion*[T: Color](image: Image[T], x, y, w, h: int): Image[T] =
+  result = initImage[T](w, h)
   for i in 0..<h:
-    copyMem addr result[i * w], unsafeAddr image[x, i + y], w * sizeof(Color)
+    copyMem addr result[i * w], unsafeAddr image[x, i + y], w * sizeof(T)
 
-func copyRegion*(image: Image, r: Rect): Image =
+func copyRegion*[T: Color](image: Image[T], r: Rect): Image[T] =
   copyRegion(image, r.x, r.y, r.w, r.h)
 
-func blit*(dest: var Image, src: Image, x, y: int) =
+func blit*[T: Color](dest: var Image[T], src: Image, x, y: int) =
   for i in 0..<src.height:
-    copyMem addr dest[x, i + y], unsafeAddr src[0, i], src.width * sizeof(Color)
+    copyMem addr dest[x, i + y], unsafeAddr src[0, i], src.width * sizeof(T)
 
-func blit*(dest: var Image, src: Image, x, y: int, rect: Rect) =
+func blit*[T: Color](dest: var Image[T], src: Image, x, y: int, rect: Rect) =
   for i in 0..<rect.h:
-    copyMem addr dest[x, i + y], unsafeAddr src[rect.x, i + rect.y], rect.w * sizeof(Color)
+    copyMem addr dest[x, i + y], unsafeAddr src[rect.x, i + rect.y], rect.w * sizeof(T)
 
-proc loadImage*(file: string): Image =
+template colorToColorMode(t: typedesc): untyped =
+  when t is ColorRGB:
+    RGB
+  else:
+    RGBA
+
+proc loadImage*[T: Color](file: string): Image[T] =
   var
     w, h, channels: int
-    data = load(file, w, h, channels, RGBA)
-  result = initImage(w, h)
+    data = load(file, w, h, channels, T.colorToColorMode)
+  result = initImage[T](w, h)
   copyMem addr result.data[0], addr data[0], data.len
 
-proc loadImageFromMemory*(buffer: seq[byte]): Image =
+proc loadImageFromMemory*[T: Color](buffer: seq[byte]): Image[T] =
   var
     w, h, channels: int
-    data = loadFromMemory(buffer, w, h, channels, RGBA)
-  result = initImage(w, h)
+    data = loadFromMemory(buffer, w, h, channels, T.colorToColorMode)
+  result = initImage[T](w, h)
   copyMem addr result.data[0], addr data[0], data.len
 
-proc savePNG*(image: Image, file: string, strides = 0) =
-  if not writePNG(file, image.w, image.h, RGBA, cast[seq[byte]](image.data), strides):
+proc savePNG*[T: Color](image: Image[T], file: string, strides = 0) =
+  if not writePNG(file, image.w, image.h, T.colorToColorMode, cast[seq[byte]](image.data), strides):
     raise newException(IOError, "Failed to write the image to " & file)
 
-proc saveJPG*(image: Image, file: string, quality: range[1..100] = 95) =
-  if not writeJPG(file, image.w, image.h, RGBA, cast[seq[byte]](image.data), quality):
+proc saveJPG*[T: Color](image: Image[T], file: string, quality: range[1..100] = 95) =
+  if not writeJPG(file, image.w, image.h, T.colorToColorMode, cast[seq[byte]](image.data), quality):
     raise newException(IOError, "Failed to write the image to " & file)
 
-proc saveBMP*(image: Image, file: string) =
-  if not writeBMP(file, image.w, image.h, RGBA, cast[seq[byte]](image.data)):
+proc saveBMP*[T: Color](image: Image[T], file: string) =
+  if not writeBMP(file, image.w, image.h, T.colorToColorMode, cast[seq[byte]](image.data)):
     raise newException(IOError, "Failed to write the image to " & file)
 
-proc saveTGA*(image: Image, file: string, useRLE = true) =
-  if not writeTGA(file, image.w, image.h, RGBA, cast[seq[byte]](image.data), useRLE):
+proc saveTGA*[T: Color](image: Image[T], file: string, useRLE = true) =
+  if not writeTGA(file, image.w, image.h, T.colorToColorMode, cast[seq[byte]](image.data), useRLE):
     raise newException(IOError, "Failed to write the image to " & file)
 
-proc writePNG*(image: Image, strides = 0): seq[byte] =
-  write.writePNG(image.w, image.h, RGBA, cast[seq[byte]](image.data), strides)
+proc writePNG*[T: Color](image: Image[T], strides = 0): seq[byte] =
+  write.writePNG(image.w, image.h, T.colorToColorMode, cast[seq[byte]](image.data), strides)
 
-proc writeJPG*(image: Image, quality: range[1..100] = 95): seq[byte] =
-  write.writeJPG(image.w, image.h, RGBA, cast[seq[byte]](image.data), quality)
+proc writeJPG*[T: Color](image: Image[T], quality: range[1..100] = 95): seq[byte] =
+  write.writeJPG(image.w, image.h, T.colorToColorMode, cast[seq[byte]](image.data), quality)
 
-proc writeBMP*(image: Image): seq[byte] =
-  write.writeBMP(image.w, image.h, RGBA, cast[seq[byte]](image.data))
+proc writeBMP*[T: Color](image: Image[T]): seq[byte] =
+  write.writeBMP(image.w, image.h, T.colorToColorMode, cast[seq[byte]](image.data))
 
-proc writeTGA*(image: Image, useRLE = true): seq[byte] =
-  write.writeTGA(image.w, image.h, RGBA, cast[seq[byte]](image.data), useRLE)
+proc writeTGA*[T: Color](image: Image[T], useRLE = true): seq[byte] =
+  write.writeTGA(image.w, image.h, T.colorToColorMode, cast[seq[byte]](image.data), useRLE)

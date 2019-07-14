@@ -1,6 +1,6 @@
 import images, colors, filters
 
-func addError*(i: var Image, x, y: int, factor: float, r, g, b: float) =
+func addError*(i: var Image, x, y: int, factor, r, g, b: float) {.inline.} =
   if not (x < 0 or y >= i.h or x >= i.w):
     let idx = x + y * i.w
     i[idx].r = uint8(i[idx].r.float + r * factor)

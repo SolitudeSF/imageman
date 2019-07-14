@@ -1,8 +1,8 @@
 import images, colors
 import math
 
-func resizedNN*(img: Image, w, h: int): Image =
-  result = initImage(w, h)
+func resizedNN*[T: Color](img: Image[T], w, h: int): Image[T] =
+  result = initImage[T](w, h)
   let
     xr = img.w.float / w.float
     yr = img.h.float / h.float
@@ -13,8 +13,8 @@ func resizedNN*(img: Image, w, h: int): Image =
       let x = int(i.float * xr)
       result[i + j] = img[x + y]
 
-func resizedNN*(img: Image, w, h: float): Image =
-  result = initImage(int(img.w.float * w), int(img.h.float * h))
+func resizedNN*[T: Color](img: Image[T], w, h: float): Image[T] =
+  result = initImage[T](int(img.w.float * w), int(img.h.float * h))
   for j in 0..<result.h:
     let y = int(j.float / h) * img.w
     let j = j * result.w
@@ -22,8 +22,8 @@ func resizedNN*(img: Image, w, h: float): Image =
       let x = int(i.float / w)
       result[i + j] = img[x + y]
 
-func resizedNNi*(img: Image, w, h: int): Image =
-  result = initImage(w, h)
+func resizedNNi*[T: Color](img: Image[T], w, h: int): Image[T] =
+  result = initImage[T](w, h)
   let
     xr = (img.w shl 16) div w
     yr = (img.h shl 16) div h
@@ -34,8 +34,8 @@ func resizedNNi*(img: Image, w, h: int): Image =
       let x = (i * xr) shr 16
       result[i + j] = img[x + y]
 
-func resizedBilinear*(img: Image, w, h: int): Image =
-  result = initImage(w, h)
+func resizedBilinear*[T: Color](img: Image[T], w, h: int): Image[T] =
+  result = initImage[T](w, h)
   let
     xr = (img.w - 1).float / w.float
     yr = (img.h - 1).float / h.float
@@ -52,14 +52,14 @@ func resizedBilinear*(img: Image, w, h: int): Image =
         b = img[id + 1]
         c = img[id + img.w]
         d = img[id + img.w + 1]
-      for t in 0..3:
+      for t in 0..sizeof(T) + 1:
         result[i + j * w][t] = uint8(a[t].float * (1 - xd) * (1 - yd) +
                                      b[t].float *      xd  * (1 - yd) +
                                      c[t].float * (1 - xd) *      yd  +
                                      d[t].float *      xd  *      yd)
 
-func resizedTrilinear*(img: Image, w, h: int): Image =
-  result = initImage(w, h)
+func resizedTrilinear*[T: Color](img: Image[T], w, h: int): Image[T] =
+  result = initImage[T](w, h)
   var
     sech = img.h
     secw = img.w
@@ -77,7 +77,7 @@ func resizedTrilinear*(img: Image, w, h: int): Image =
   for i in 0..<w*h:
     result.data[i] = interpolate(first.data[i], second.data[i], 0.5)
 
-func cubicFilter(a, b, c: float): float =
+func cubicFilter(a, b, c: float): float {.inline.} =
   let x = abs a
   if x < 1:
     ((12 - 9*b - 6*c) * pow(x, 3) + (12*b + 6*c - 18) * x * x + 6 - b - b) / 6
@@ -85,8 +85,8 @@ func cubicFilter(a, b, c: float): float =
     ((6*b + 30*c) * x * x - (b + 6*c) * pow(x, 3) - (12*b + 48*c) * x + 8*b + 24*c) / 6
   else: 0
 
-func resizedBicubic*(img: Image, w, h: int, B=1.0, C=0.0): Image =
-  result = initImage(w, h)
+func resizedBicubic*[T: Color](img: Image[T], w, h: int, B=1.0, C=0.0): Image[T] =
+  result = initImage[T](w, h)
   let
     xr = img.w.float / w.float
     yr = img.h.float / h.float
@@ -116,4 +116,7 @@ func resizedBicubic*(img: Image, w, h: int, B=1.0, C=0.0): Image =
             nr += int(p.r.float * Bmdx * Bdyn)
             ng += int(p.g.float * Bmdx * Bdyn)
             nb += int(p.b.float * Bmdx * Bdyn)
-      result[i + jw] = [uint8 nr, uint8 ng, uint8 nb, img[int(i.float * xr), int(j.float * yr)].a]
+      when T is ColorRGB:
+        result[i + jw] = [uint8 nr, uint8 ng, uint8 nb]
+      else:
+        result[i + jw] = [uint8 nr, uint8 ng, uint8 nb, img[int(i.float * xr), int(j.float * yr)].a]
