@@ -8,6 +8,12 @@ Some example usage in tests.
 ## Why
 To have some boilerplate for recreative programming with images.
 
+## Projects using imageman
+
+[diffimg](https://github.com/SolitudeSF/diffimg) - image diffing tool and library.
+
+[blurhash](https://github.com/SolitudeSF/blurhash) - blurhash algorith implementation.
+
 ## Installation
 `nimble install imageman`
 
