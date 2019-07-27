@@ -1,6 +1,7 @@
 import sequtils, math, random, streams, endians
 import stb_image/[read, write]
 import colors
+export ColorRGB, ColorRGBA
 
 type
   Image*[T: Color] = object
