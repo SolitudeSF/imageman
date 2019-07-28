@@ -52,11 +52,12 @@ func resizedBilinear*[T: Color](img: Image[T], w, h: int): Image[T] =
         b = img[id + 1]
         c = img[id + img.w]
         d = img[id + img.w + 1]
-      for t in 0..sizeof(T) + 1:
-        result[i + j * w][t] = uint8(a[t].float * (1 - xd) * (1 - yd) +
-                                     b[t].float *      xd  * (1 - yd) +
-                                     c[t].float * (1 - xd) *      yd  +
-                                     d[t].float *      xd  *      yd)
+      for t in 0..T.len - 1:
+        result[i + j * w][t] = (T.componentType) (
+          a[t].precise * (1 - xd) * (1 - yd) +
+          b[t].precise *      xd  * (1 - yd) +
+          c[t].precise * (1 - xd) *      yd  +
+          d[t].precise *      xd  *      yd)
 
 func resizedTrilinear*[T: Color](img: Image[T], w, h: int): Image[T] =
   result = initImage[T](w, h)
@@ -80,12 +81,12 @@ func resizedTrilinear*[T: Color](img: Image[T], w, h: int): Image[T] =
 func cubicFilter(a, b, c: float): float {.inline.} =
   let x = abs a
   if x < 1:
-    ((12 - 9*b - 6*c) * pow(x, 3) + (12*b + 6*c - 18) * x * x + 6 - b - b) / 6
+    ((12 - 9*b - 6*c) * x * x * x + (12*b + 6*c - 18) * x * x + 6 - b - b) / 6
   elif x < 2:
-    ((6*b + 30*c) * x * x - (b + 6*c) * pow(x, 3) - (12*b + 48*c) * x + 8*b + 24*c) / 6
+    ((6*b + 30*c) * x * x - (b + 6*c) * x * x * x - (12*b + 48*c) * x + 8*b + 24*c) / 6
   else: 0
 
-func resizedBicubic*[T: Color](img: Image[T], w, h: int, B=1.0, C=0.0): Image[T] =
+func resizedBicubic*[T: Color](img: Image[T], w, h: int, b = 1.0, c = 0.0): Image[T] =
   result = initImage[T](w, h)
   let
     xr = img.w.float / w.float
@@ -99,24 +100,23 @@ func resizedBicubic*[T: Color](img: Image[T], w, h: int, B=1.0, C=0.0): Image[T]
       let
         ox = int(xr * i.float)
         dx = xr * i.float - ox.float
-      var
-        nr = 0
-        ng = 0
-        nb = 0
+      var nr, ng, nb: T.componentType
       for m in -1..2:
         let
-          Bmdx = cubicFilter(m.float - dx, B, C)
+          bmdx = cubicFilter(m.float - dx, b, c)
           oxm = ox + m
         for n in -1..2:
           let oyn = oy + n
           if (oxm >= 0 and oyn >= 0 and oxm < img.w and oyn < img.h):
             let
-              Bdyn = cubicFilter(dy - n.float, B, C)
+              bdyn = cubicFilter(dy - n.float, b, c)
               p = img[oxm, oyn]
-            nr += int(p.r.float * Bmdx * Bdyn)
-            ng += int(p.g.float * Bmdx * Bdyn)
-            nb += int(p.b.float * Bmdx * Bdyn)
-      when T is ColorRGB:
-        result[i + jw] = [uint8 nr, uint8 ng, uint8 nb]
-      else:
-        result[i + jw] = [uint8 nr, uint8 ng, uint8 nb, img[int(i.float * xr), int(j.float * yr)].a]
+            nr += (T.componentType) (p.r.precise * bmdx * bdyn)
+            ng += (T.componentType) (p.g.precise * bmdx * bdyn)
+            nb += (T.componentType) (p.b.precise * bmdx * bdyn)
+      let coord = i + jw
+      result[coord].r = nr
+      result[coord].g = ng
+      result[coord].b = nb
+      when T is ColorA:
+        result[coord].a = img[int(i.float * xr), int(j.float * yr)].a

@@ -1,24 +1,24 @@
 import images, colors, filters
 
-func addError*(i: var Image, x, y: int, factor, r, g, b: float) {.inline.} =
+func addError[T: Color](i: var Image[T], x, y: int, factor, r, g, b: float32) {.inline.} =
   if not (x < 0 or y >= i.h or x >= i.w):
     let idx = x + y * i.w
-    i[idx].r = uint8(i[idx].r.float + r * factor)
-    i[idx].g = uint8(i[idx].g.float + g * factor)
-    i[idx].b = uint8(i[idx].b.float + b * factor)
+    i[idx].r = (T.componentType) (i[idx].r.precise + r * factor)
+    i[idx].g = (T.componentType) (i[idx].g.precise + g * factor)
+    i[idx].b = (T.componentType) (i[idx].b.precise + b * factor)
 
-func twoDist*(i: var Image, x, y: int, r, g, b: float) =
+func twoDist*(i: var Image, x, y: int, r, g, b: float32) =
   i.addError(x + 1, y    , 2/4.0, r, g, b)
   i.addError(x    , y + 1, 1/4.0, r, g, b)
   i.addError(x + 1, y + 1, 1/4.0, r, g, b)
 
-func floydsteinDist*(i: var Image, x, y: int, r, g, b: float) =
+func floydsteinDist*(i: var Image, x, y: int, r, g, b: float32) =
   i.addError(x + 1, y    , 7/16.0, r, g, b)
   i.addError(x - 1, y + 1, 3/16.0, r, g, b)
   i.addError(x    , y + 1, 5/16.0, r, g, b)
   i.addError(x + 1, y + 1, 1/16.0, r, g, b)
 
-func atkinsonDist*(i: var Image, x, y: int, r, g, b: float) =
+func atkinsonDist*(i: var Image, x, y: int, r, g, b: float32) =
   i.addError(x + 1, y    , 1/8.0, r, g, b)
   i.addError(x + 2, y    , 1/8.0, r, g, b)
   i.addError(x - 1, y + 1, 1/8.0, r, g, b)
@@ -26,7 +26,7 @@ func atkinsonDist*(i: var Image, x, y: int, r, g, b: float) =
   i.addError(x + 1, y + 1, 1/8.0, r, g, b)
   i.addError(x    , y + 2, 1/8.0, r, g, b)
 
-func burkeDist*(i: var Image, x, y: int, r, g, b: float) =
+func burkeDist*(i: var Image, x, y: int, r, g, b: float32) =
   i.addError(x + 1, y    , 8/42.0, r, g, b)
   i.addError(x + 2, y    , 4/42.0, r, g, b)
   i.addError(x - 2, y + 1, 2/42.0, r, g, b)
@@ -35,7 +35,7 @@ func burkeDist*(i: var Image, x, y: int, r, g, b: float) =
   i.addError(x + 1, y + 1, 4/42.0, r, g, b)
   i.addError(x + 2, y + 1, 2/42.0, r, g, b)
 
-func sierraDist*(i: var Image, x, y: int, r, g, b: float) =
+func sierraDist*(i: var Image, x, y: int, r, g, b: float32) =
   i.addError(x + 1, y    , 5/32.0, r, g, b)
   i.addError(x + 2, y    , 3/32.0, r, g, b)
   i.addError(x - 2, y + 1, 2/32.0, r, g, b)
@@ -47,7 +47,7 @@ func sierraDist*(i: var Image, x, y: int, r, g, b: float) =
   i.addError(x    , y + 2, 3/32.0, r, g, b)
   i.addError(x + 1, y + 2, 2/32.0, r, g, b)
 
-func sierra2Dist*(i: var Image, x, y: int, r, g, b: float) =
+func sierra2Dist*(i: var Image, x, y: int, r, g, b: float32) =
   i.addError(x + 1, y    , 4/16.0, r, g, b)
   i.addError(x + 2, y    , 3/16.0, r, g, b)
   i.addError(x - 2, y + 1, 1/16.0, r, g, b)
@@ -56,12 +56,12 @@ func sierra2Dist*(i: var Image, x, y: int, r, g, b: float) =
   i.addError(x + 1, y + 1, 2/16.0, r, g, b)
   i.addError(x + 2, y + 1, 1/16.0, r, g, b)
 
-func sierraLiteDist*(i: var Image, x, y: int, r, g, b: float) =
+func sierraLiteDist*(i: var Image, x, y: int, r, g, b: float32) =
   i.addError(x + 1, y    , 2/4.0, r, g, b)
   i.addError(x - 1, y + 1, 1/4.0, r, g, b)
   i.addError(x    , y + 1, 1/4.0, r, g, b)
 
-func jarvisDist*(i: var Image, x, y: int, r, g, b: float) =
+func jarvisDist*(i: var Image, x, y: int, r, g, b: float32) =
   i.addError(x + 1, y    , 7/48.0, r, g, b)
   i.addError(x + 2, y    , 5/48.0, r, g, b)
   i.addError(x - 2, y + 1, 3/48.0, r, g, b)
@@ -75,7 +75,7 @@ func jarvisDist*(i: var Image, x, y: int, r, g, b: float) =
   i.addError(x + 1, y + 2, 3/48.0, r, g, b)
   i.addError(x + 2, y + 2, 1/48.0, r, g, b)
 
-func stuckiDist*(i: var Image, x, y: int, r, g, b: float) =
+func stuckiDist*(i: var Image, x, y: int, r, g, b: float32) =
   i.addError(x + 1, y    , 8/42.0, r, g, b)
   i.addError(x + 2, y    , 4/42.0, r, g, b)
   i.addError(x - 2, y + 1, 2/42.0, r, g, b)
@@ -95,10 +95,10 @@ template dither*(i: var Image, dist) =
     for x in 0..<i.w:
       let idx = x + yw
       let prev = i[idx]
-      i[idx].quantize 1'u8
-      i.dist(x, y, prev[0].float - i[idx][0].float,
-                   prev[1].float - i[idx][1].float,
-                   prev[2].float - i[idx][2].float)
+      i[idx].quantize 1
+      i.dist(x, y, prev[0].precise - i[idx][0].precise,
+                   prev[1].precise - i[idx][1].precise,
+                   prev[2].precise - i[idx][2].precise)
 
 template dithered*(i: Image, dist): Image =
   var r = i

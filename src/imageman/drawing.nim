@@ -72,15 +72,15 @@ iterator circleBres*(x0, y0, r: int): Point =
       y -= 1
     x += 1
 
-func drawCircle*(i: var Image, x0, y0, r: int, c = black) =
+func drawCircle*[T: Color](i: var Image[T], x0, y0, r: int, c: T) =
   for point in circle(x0, y0, r):
     i[point] = c
 
-func drawCircle*(i: var Image, a: Point, r: int, c = black) =
+func drawCircle*[T: Color](i: var Image[T], a: Point, r: int, c: T) =
   for point in circle(a.x, a.y, r):
     i[point] = c
 
-func drawFilledCircle*(i: var Image, a: Point, r: int, c = black) =
+func drawFilledCircle*[T: Color](i: var Image[T], a: Point, r: int, c: T) =
   for y in a.y - r..a.y + r:
     let
       yw = y * i.w
@@ -129,19 +129,19 @@ iterator line*(x0, y0, x1, y1: int): Point =
         x0 += dx2
         y0 += dy2
 
-func drawLine*(i: var Image, x0, y0, x1, y1: int, c = black) =
+func drawLine*[T: Color](i: var Image[T], x0, y0, x1, y1: int, c: T) =
   for point in line(x0, y0, x1, y1):
     i[point] = c
 
-func drawLine*(i: var Image, a, b: Point, c = black) =
+func drawLine*[T: Color](i: var Image[T], a, b: Point, c: T) =
   for point in line(a.x, a.y, b.x, b.y):
     i[point] = c
 
-func drawPolyline*(i: var Image, closed = false, color = black, points: varargs[Point]) =
+func drawPolyline*[T: Color](i: var Image[T], closed = false, c: T, points: varargs[Point]) =
   for p in 1..points.high:
-    i.drawLine(points[p-1], points[p], color)
-  if closed: i.drawLine(points[^1], points[0], color)
+    i.drawLine(points[p-1], points[p], c)
+  if closed: i.drawLine(points[^1], points[0], c)
 
-func drawBrush*(i: var Image, a, b: Point, r = 10, c = black) =
+func drawBrush*[T: Color](i: var Image[T], a, b: Point, r = 10, c: T) =
   for point in line(a.x, a.y, b.x, b.y):
     i.drawFilledCircle(point, r, c)

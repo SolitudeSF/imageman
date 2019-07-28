@@ -1,7 +1,7 @@
 import sequtils, math, random, streams, endians
 import stb_image/[read, write]
 import colors
-export ColorRGB, ColorRGBA
+export ColorRGB, ColorRGBA, ColorRGBAF
 
 type
   Image*[T: Color] = object
@@ -81,50 +81,74 @@ func blit*[T: Color](dest: var Image[T], src: Image, x, y: int, rect: Rect) =
   for i in 0..<rect.h:
     copyMem addr dest[x, i + y], unsafeAddr src[rect.x, i + rect.y], rect.w * sizeof(T)
 
-template colorToColorMode(t: typedesc): untyped =
+template colorToColorMode(t: typedesc[Color]): untyped =
   when t is ColorRGB:
     RGB
-  else:
+  elif t is ColorRGBA:
     RGBA
+  elif t is ColorRGBAF:
+    RGBA
+
+template importData[T: Color](r: var seq[T], s: seq[byte]) =
+  when T is ColorRGBAF:
+    for i in 0..r.high:
+      r[i][0] = s[i * 4].toLinear
+      r[i][1] = s[i * 4 + 1].toLinear
+      r[i][2] = s[i * 4 + 2].toLinear
+      r[i][3] = s[i * 4 + 3].toLinear
+  else:
+    copyMem addr r[0], unsafeAddr s[0], s.len
+
+template toExportData[T: Color](s: seq[T]): seq[byte] =
+  when T is ColorRGBAF:
+    var r = newSeq[byte](s.len * 4)
+    for i in 0..s.high:
+      r[i * 4]     = s[i][0].toUint8
+      r[i * 4 + 1] = s[i][1].toUint8
+      r[i * 4 + 2] = s[i][2].toUint8
+      r[i * 4 + 3] = s[i][3].toUint8
+    r
+  else:
+    cast[seq[byte]](s)
 
 proc loadImage*[T: Color](file: string): Image[T] =
   var
     w, h, channels: int
     data = load(file, w, h, channels, T.colorToColorMode)
   result = initImage[T](w, h)
-  copyMem addr result.data[0], addr data[0], data.len
+  result.data.importData data
 
 proc loadImageFromMemory*[T: Color](buffer: seq[byte]): Image[T] =
   var
     w, h, channels: int
     data = loadFromMemory(buffer, w, h, channels, T.colorToColorMode)
   result = initImage[T](w, h)
-  copyMem addr result.data[0], addr data[0], data.len
+  result.data.importData data
 
 proc savePNG*[T: Color](image: Image[T], file: string, strides = 0) =
-  if not writePNG(file, image.w, image.h, T.colorToColorMode, cast[seq[byte]](image.data), strides):
+  if not writePNG(file, image.w, image.h, T.colorToColorMode, image.data.toExportData, strides):
     raise newException(IOError, "Failed to write the image to " & file)
 
 proc saveJPG*[T: Color](image: Image[T], file: string, quality: range[1..100] = 95) =
-  if not writeJPG(file, image.w, image.h, T.colorToColorMode, cast[seq[byte]](image.data), quality):
+  if not writeJPG(file, image.w, image.h, T.colorToColorMode, image.data.toExportData, quality):
     raise newException(IOError, "Failed to write the image to " & file)
 
 proc saveBMP*[T: Color](image: Image[T], file: string) =
-  if not writeBMP(file, image.w, image.h, T.colorToColorMode, cast[seq[byte]](image.data)):
+  if not writeBMP(file, image.w, image.h, T.colorToColorMode, image.data.toExportData):
     raise newException(IOError, "Failed to write the image to " & file)
 
 proc saveTGA*[T: Color](image: Image[T], file: string, useRLE = true) =
-  if not writeTGA(file, image.w, image.h, T.colorToColorMode, cast[seq[byte]](image.data), useRLE):
+  if not writeTGA(file, image.w, image.h, T.colorToColorMode, image.data.toExportData, useRLE):
     raise newException(IOError, "Failed to write the image to " & file)
 
 proc writePNG*[T: Color](image: Image[T], strides = 0): seq[byte] =
-  write.writePNG(image.w, image.h, T.colorToColorMode, cast[seq[byte]](image.data), strides)
+  write.writePNG(image.w, image.h, T.colorToColorMode, image.data.toExportData, strides)
 
 proc writeJPG*[T: Color](image: Image[T], quality: range[1..100] = 95): seq[byte] =
-  write.writeJPG(image.w, image.h, T.colorToColorMode, cast[seq[byte]](image.data), quality)
+  write.writeJPG(image.w, image.h, T.colorToColorMode, image.data.toExportData, quality)
 
 proc writeBMP*[T: Color](image: Image[T]): seq[byte] =
-  write.writeBMP(image.w, image.h, T.colorToColorMode, cast[seq[byte]](image.data))
+  write.writeBMP(image.w, image.h, T.colorToColorMode, image.data.toExportData)
 
 proc writeTGA*[T: Color](image: Image[T], useRLE = true): seq[byte] =
-  write.writeTGA(image.w, image.h, T.colorToColorMode, cast[seq[byte]](image.data), useRLE)
+  write.writeTGA(image.w, image.h, T.colorToColorMode, image.data.toExportData, useRLE)
