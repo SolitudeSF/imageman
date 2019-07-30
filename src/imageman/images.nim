@@ -1,7 +1,7 @@
 import sequtils, math, random, streams, endians
 import stb_image/[read, write]
 import colors
-export ColorRGB, ColorRGBA, ColorRGBAF
+export ColorRGBU, ColorRGBAU, ColorRGBF, ColorRGBAF
 
 type
   Image*[T: Color] = object
@@ -82,31 +82,35 @@ func blit*[T: Color](dest: var Image[T], src: Image, x, y: int, rect: Rect) =
     copyMem addr dest[x, i + y], unsafeAddr src[rect.x, i + rect.y], rect.w * sizeof(T)
 
 template colorToColorMode(t: typedesc[Color]): untyped =
-  when t is ColorRGB:
+  when t is ColorRGBU:
     RGB
-  elif t is ColorRGBA:
+  elif t is ColorRGBAU:
     RGBA
+  elif t is ColorRGBF:
+    RGB
   elif t is ColorRGBAF:
     RGBA
 
 template importData[T: Color](r: var seq[T], s: seq[byte]) =
-  when T is ColorRGBAF:
+  when T is ColorRGBFAny:
     for i in 0..r.high:
-      r[i][0] = s[i * 4].toLinear
-      r[i][1] = s[i * 4 + 1].toLinear
-      r[i][2] = s[i * 4 + 2].toLinear
-      r[i][3] = s[i * 4 + 3].toLinear
+      r[i][0] = s[i * T.len].toLinear
+      r[i][1] = s[i * T.len + 1].toLinear
+      r[i][2] = s[i * T.len + 2].toLinear
+      when T is ColorRGBAF:
+        r[i][3] = s[i * 4 + 3].toLinear
   else:
     copyMem addr r[0], unsafeAddr s[0], s.len
 
 template toExportData[T: Color](s: seq[T]): seq[byte] =
-  when T is ColorRGBAF:
+  when T is ColorRGBFAny:
     var r = newSeq[byte](s.len * 4)
     for i in 0..s.high:
-      r[i * 4]     = s[i][0].toUint8
-      r[i * 4 + 1] = s[i][1].toUint8
-      r[i * 4 + 2] = s[i][2].toUint8
-      r[i * 4 + 3] = s[i][3].toUint8
+      r[i * T.len]     = s[i][0].toUint8
+      r[i * T.len + 1] = s[i][1].toUint8
+      r[i * T.len + 2] = s[i][2].toUint8
+      when T is ColorRGBAF:
+        r[i * 4 + 3] = s[i][3].toUint8
     r
   else:
     cast[seq[byte]](s)

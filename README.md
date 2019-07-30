@@ -29,8 +29,9 @@ Enables safety checks on per-pixel operations (`[]`, `[]=`), to prevent illegal 
     - [x] TGA
     - [ ] FF
 - Color modes
-    - [x] `ColorRGB` - 8bit uint 3 components
-    - [x] `ColorRGBA` - 8bit uint 4 components
+    - [x] `ColorRGBU` - 8bit uint 3 components
+    - [x] `ColorRGBAU` - 8bit uint 4 components
+    - [x] `ColorRGBF` - 32bit float 3 components
     - [x] `ColorRGBAF` - 32bit float 4 components
 - Resizing
     - [x] Nearest neighbour

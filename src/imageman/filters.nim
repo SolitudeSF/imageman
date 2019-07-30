@@ -84,21 +84,21 @@ genFilter MotionBlur
 genFilter GaussianBlur5
 genFilter UnsharpMasking
 
-func quantize*(c: var ColorRGBAF, factor: float32) =
+func quantize*(c: var ColorRGBFAny, factor: float32) =
   c[0] = round(factor * c[0]) / factor
   c[1] = round(factor * c[1]) / factor
   c[2] = round(factor * c[2]) / factor
 
-func quantized*(c: ColorRGBAF, factor: float32): ColorRGBAF =
+func quantized*(c: ColorRGBFAny, factor: float32): ColorRGBAF =
   result = c
   quantize result, factor
 
-func quantize*[T: ColorRGB | ColorRGBA](c: var T, factor: uint8) =
+func quantize*[T: ColorRGBUAny](c: var T, factor: uint8) =
   c[0] = uint8(round(factor.float32 * c[0].float32 / 255.0) * float32(255'u8 div factor))
   c[1] = uint8(round(factor.float32 * c[1].float32 / 255.0) * float32(255'u8 div factor))
   c[2] = uint8(round(factor.float32 * c[2].float32 / 255.0) * float32(255'u8 div factor))
 
-func quantized*[T: ColorRGB | ColorRGBA](c: T, factor: uint8): T =
+func quantized*[T: ColorRGBUAny](c: T, factor: uint8): T =
   result = c
   quantize result, factor
 
