@@ -1,7 +1,6 @@
-import sequtils, math, random, streams, endians
 import stb_image/[read, write]
 import colors
-export ColorRGBU, ColorRGBAU, ColorRGBF, ColorRGBAF
+export ColorRGBU, ColorRGBAU, ColorRGBF, ColorRGBAF, colors.`[]`, colors.`[]=`, colors.len, colors.high, colors.`==`
 
 type
   Image*[T: Color] = object

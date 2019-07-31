@@ -1,20 +1,25 @@
-import math, random
+import math, random, sugar
 
 type
-  Size = static int
   ColorComponent* = uint8 | float32
-  ColorAny*[S: Size, C: ColorComponent] = array[S, C]
-  ColorU*[S: Size] = array[S, uint8]
-  ColorF*[S: Size] = array[S, float32]
-  ColorA*[C: ColorComponent] = array[4, C]
-  ColorRGBU* = array[3, uint8]
-  ColorRGBAU* = array[4, uint8]
-  ColorRGBF* = array[3, float32]
-  ColorRGBAF* = array[4, float32]
+  ColorRGBU* = distinct array[3, uint8]
+  ColorRGBAU* = distinct array[4, uint8]
+  ColorRGBF* = distinct array[3, float32]
+  ColorRGBAF* = distinct array[4, float32]
   ColorRGBUAny* = ColorRGBU | ColorRGBAU
   ColorRGBFAny* = ColorRGBF | ColorRGBAF
   ColorRGBAny* = ColorRGBUAny | ColorRGBFAny
+  ColorA* = ColorRGBAU | ColorRGBAF
   Color* = ColorRGBAny
+
+template asBase*(c: typed): untyped = distinctBase(typeof c) c
+template `[]`*[T: Color](c: T, n: Ordinal): auto = asBase(c)[n]
+template `[]=`*[T: Color](c: var T, n: Natural, v) = asBase(c)[n] = v
+template len*(c: typedesc[Color]): int = distinctBase(c).len
+template len*(c: Color): int = asBase(c).len
+template high*(c: typedesc[Color]): int = distinctBase(c).high
+template high*(c: Color): int = asBase(c).high
+template `==`*[T: Color](x, y: T): bool = asBase(x) == asBase(y)
 
 template r*(c: Color): untyped = c[0]
 template g*(c: Color): untyped = c[1]
@@ -70,45 +75,41 @@ func toRGBAF*(c: ColorRGBF): ColorRGBAF =
   result.a = 1.0
 
 func toRGBF*(c: ColorRGBAny): ColorRGBF =
-  [c.r.toLinear, c.g.toLinear, c.b.toLinear]
+  ColorRGBF [c.r.toLinear, c.g.toLinear, c.b.toLinear]
 
 func toRGB*(c: ColorRGBFAny): ColorRGBU =
-  [c.r.toUint8, c.g.toUint8, c.b.toUint8]
+  ColorRGBU [c.r.toUint8, c.g.toUint8, c.b.toUint8]
 
 func toRGBAF*(c: ColorRGBAU): ColorRGBAF =
-  [c.r.toLinear, c.g.toLinear, c.b.toLinear, c.a.toLinear]
+  ColorRGBAF [c.r.toLinear, c.g.toLinear, c.b.toLinear, c.a.toLinear]
 
 func toRGBAF*(c: ColorRGBU): ColorRGBAF =
-  [c.r.toLinear, c.g.toLinear, c.b.toLinear, 1.0]
+  ColorRGBAF [c.r.toLinear, c.g.toLinear, c.b.toLinear, 1.0]
 
 func toRGBA*(c: ColorRGBAF): ColorRGBAU =
-  [c.r.toUint8, c.g.toUint8, c.b.toUint8, c.a.toUint8]
+  ColorRGBAU [c.r.toUint8, c.g.toUint8, c.b.toUint8, c.a.toUint8]
 
 func blendColorValue*[T: ColorComponent](a, b: T, t: float32): T {.inline.} =
   T sqrt((1.0 - t) * a.precise * a.precise + t * b.precise * b.precise)
 
-func `+`*[S, C](a, b: ColorAny[S, C]): ColorAny[S, C] =
-  when S >= 3:
-    result.r = blendColorValue(a.r, b.r, 0.3)
-    result.g = blendColorValue(a.g, b.g, 0.3)
-    result.b = blendColorValue(a.b, b.b, 0.3)
-  elif S == 4:
+func `+`*[T: Color](a, b: T): T =
+  result.r = blendColorValue(a.r, b.r, 0.3)
+  result.g = blendColorValue(a.g, b.g, 0.3)
+  result.b = blendColorValue(a.b, b.b, 0.3)
+  when T is ColorA:
     result.a = a.a
 
-func `$`*(c: ColorRGBAF): string =
+func `$`*(c: ColorA): string =
   "(r: " & $c.r & ", g: " & $c.g & ", b: " & $c.b & ", a: " & $c.a & ")"
 
-func `$`*(c: ColorRGBAU): string =
-  "(r: " & $c.r & ", g: " & $c.g & ", b: " & $c.b & ", a: " & $c.a & ")"
-
-func `$`*(c: ColorRGBU): string =
+func `$`*(c: ColorRGBU | ColorRGBF): string =
   "(r: " & $c.r & ", g: " & $c.g & ", b: " & $c.b & ")"
 
 func `~=`*(a, b: ColorRGBAF, e = 0.01'f32): bool =
   abs(a.r - b.r) < e and abs(a.g - b.g) < e and abs(a.b - b.b) < e
 
 proc rand*[T: Color]: T =
-  when T is ColorRGBU:
+  T (when T is ColorRGBU:
     [uint8 rand(255), uint8 rand(255), uint8 rand(255)]
   elif T is ColorRGBAU:
     [uint8 rand(255), uint8 rand(255), uint8 rand(255), uint rand(255)]
@@ -116,9 +117,10 @@ proc rand*[T: Color]: T =
     [rand(1.0), rand(1.0), rand(1.0)]
   elif T is ColorRGBAF:
     [rand(1.0), rand(1.0), rand(1.0), uint rand(1.0)]
+  )
 
 func rand*[T: Color](r: var Rand): T =
-  when T is ColorRGBU:
+  T (when T is ColorRGBU:
     [uint8 r.rand(255), uint8 r.rand(255), uint8 r.rand(255)]
   elif T is ColorRGBAU:
     [uint8 r.rand(255), uint8 r.rand(255), uint8 r.rand(255), uint r.rand(255)]
@@ -126,6 +128,7 @@ func rand*[T: Color](r: var Rand): T =
     [r.rand(1.0), r.rand(1.0), r.rand(1.0)]
   elif T is ColorRGBAF:
     [r.rand(1.0), r.rand(1.0), r.rand(1.0), r.rand(1.0)]
+  )
 
 func isGreyscale*(c: Color): bool =
   c.r == c.g and c.r == c.b
