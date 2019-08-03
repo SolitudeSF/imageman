@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.6.2"
+version       = "0.6.3"
 author        = "SolitudeSF"
 description   = "Image manipulation library"
 license       = "MIT"
