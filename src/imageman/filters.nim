@@ -40,37 +40,42 @@ const
                            [4.0, 16.0,  24.0, 16.0, 4.0],
                            [1.0,  4.0,   6.0,  4.0, 1.0]]
 
-func withKernel*[T: Color](img: var Image[T], k: openArray[array | seq | openArray]): Image[T] =
-  result = img
+func withKernel*[T: Color](img: Image[T], k: openArray[array | seq | openArray]): Image[T] =
+  result = initImage[T](img.width, img.height)
+
   let
-    kh = k.len
-    kw = k[0].len
-  var denom = 0.0
+    kh = k.len div 2
+    kw = k[0].len div 2
+    src = img.paddedReflect(kw, kh)
+    denom = block:
+      var s = 0.0
+      for i in k:
+        for j in i:
+          s += j
+      if s == 0: 1.0 else: s
 
-  for i in k:
-    for j in i:
-      denom += j
-  if denom == 0:
-    denom = 1
-
-  for y in 0..img.h - kw:
-    let yw = y * img.w
-    for x in 0..img.w - kh:
+  for y in 0..<result.height:
+    let yw = y * result.width
+    for x in 0..<result.width:
       var r, g, b = 0.0'f32
-      for j in 0..<kh:
-        let ry = (y + j) * img.w
-        for i in 0..<kw:
-          let rx = x + i
-          r += img[rx + ry][0].precise * k[i][j]
-          g += img[rx + ry][1].precise * k[i][j]
-          b += img[rx + ry][2].precise * k[i][j]
-      result[x + yw][0] = (T.componentType) clamp(r / denom, 0, T.maxComponentValue.precise)
-      result[x + yw][1] = (T.componentType) clamp(g / denom, 0, T.maxComponentValue.precise)
-      result[x + yw][2] = (T.componentType) clamp(b / denom, 0, T.maxComponentValue.precise)
+      let precalc = (y + kh) * src.width + kw + x
+      for j in 0..<k.len:
+        let precalc = precalc + (j - kh) * src.width
+        for i in 0..<k[0].len:
+          let pos = precalc + i - kw
+          r += src[pos].r.precise * k[i][j]
+          g += src[pos].g.precise * k[i][j]
+          b += src[pos].b.precise * k[i][j]
+      let target = yw + x
+      result[target].r = (T.componentType) clamp(r / denom, 0, T.maxComponentValue.precise)
+      result[target].g = (T.componentType) clamp(g / denom, 0, T.maxComponentValue.precise)
+      result[target].b = (T.componentType) clamp(b / denom, 0, T.maxComponentValue.precise)
+      when T is ColorA:
+        result[target].a = img[target].a
 
 template genFilter(n): untyped =
-  template `filtered n`*(i: Image): untyped = withKernel i, `kernel n`
-  template `filter n`*(i: var Image): untyped = i = i.withKernel `kernel n`
+  template `filtered n`*[T: Color](i: Image[T]): Image[T] = withKernel i, `kernel n`
+  template `filter n`*[T: Color](i: var Image[T]) = i = i.withKernel `kernel n`
 
 genFilter Smoothing
 genFilter Sharpening
