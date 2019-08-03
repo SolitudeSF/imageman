@@ -40,13 +40,15 @@ const
                            [4.0, 16.0,  24.0, 16.0, 4.0],
                            [1.0,  4.0,   6.0,  4.0, 1.0]]
 
-func withKernel*[T: Color](img: Image[T], k: openArray[array | seq | openArray]): Image[T] =
+func withKernel*[T: Color](img: Image[T], k: openArray[array | seq | openArray],
+  padKind = pkMirror): Image[T] =
+
   result = initImage[T](img.width, img.height)
 
   let
     kh = k.len div 2
     kw = k[0].len div 2
-    src = img.paddedReflect(kw, kh)
+    src = img.padded(kw, kh, padKind)
     denom = block:
       var s = 0.0
       for i in k:

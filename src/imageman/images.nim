@@ -9,6 +9,8 @@ type
   Point* = tuple[x, y: int]
   Rect* = object
     x*, y*, w*, h*: int
+  PadKind* = enum
+    pkEmpty, pkExtend, pkWrap, pkMirror
 
 func contains*(i: Image, p: Point): bool =
   p.x >= 0 and p.y >= 0 and p.x < i.height and p.y < i.width
@@ -143,7 +145,7 @@ func paddedWrap*[T: Color](img: Image[T], padX, padY: int): Image[T] =
     for x in 0..<padW:
       result[yw + x] = result[yw + x - topY]
 
-func paddedReflect*[T: Color](img: Image[T], padX, padY: int): Image[T] =
+func paddedMirror*[T: Color](img: Image[T], padX, padY: int): Image[T] =
   result = img.paddedEmpty(padX, padY)
   let
     padW = result.w
@@ -179,8 +181,18 @@ template padExtend*[T: Color](img: var Image[T], padX, padY: int) =
 template padWrap*[T: Color](img: var Image[T], padX, padY: int) =
   img = img.paddedWrap(padX, padY)
 
-template padReflect*[T: Color](img: var Image[T], padX, padY: int) =
-  img = img.paddedReflect(padX, padY)
+template padMirror*[T: Color](img: var Image[T], padX, padY: int) =
+  img = img.paddedMirror(padX, padY)
+
+template padded*[T: Color](img: Image[T], padX, padY: int, kind: PadKind): Image[T] =
+  case kind
+  of pkEmpty: img.paddedEmpty padX, padY
+  of pkExtend: img.paddedExtend padX, padY
+  of pkWrap: img.paddedWrap padX, padY
+  of pkMirror: img.paddedMirror padX, padY
+
+template pad*[T: Color](img: var Image[T], padX, padY: int, kind: PadKind) =
+  img = img.pad(padX, padY, kind)
 
 template toColorMode(t: typedesc[Color]): untyped =
   when t is ColorA: RGBA else: RGB
