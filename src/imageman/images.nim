@@ -80,15 +80,98 @@ func blit*[T: Color](dest: var Image[T], src: Image, x, y: int, rect: Rect) =
   for i in 0..<rect.h:
     copyMem addr dest[x, i + y], unsafeAddr src[rect.x, i + rect.y], rect.w * sizeof(T)
 
-template colorToColorMode(t: typedesc[Color]): untyped =
-  when t is ColorRGBU:
-    RGB
-  elif t is ColorRGBAU:
-    RGBA
-  elif t is ColorRGBF:
-    RGB
-  elif t is ColorRGBAF:
-    RGBA
+func paddedEmpty*[T: Color](img: Image[T], padX, padY: int): Image[T] =
+  result = initImage[T](img.w + padX * 2, img.h + padY * 2)
+  result.blit img, padX, padY
+
+func paddedExtend*[T: Color](img: Image[T], padX, padY: int): Image[T] =
+  result = img.paddedEmpty(padX, padY)
+  let
+    padW = result.width
+    padH = result.height
+    topY = padY * padW
+    botY = (padH - padY - 1) * padW
+    rightX = padW - padX - 1
+
+  for y in 0..<padY:
+    let yw = y * padW
+    for x in 0..<padX:
+      result[yw + x] = result[topY + padX]
+    for x in padX..<padW - padX:
+      result[yw + x] = result[topY + x]
+    for x in padW - padX..<padW:
+      result[yw + x] = result[topY + rightX]
+
+  for y in padY..<padH - padY:
+    let yw = y * padW
+    for x in 0..<padX:
+      result[yw + x] = result[yw + padX]
+    for x in padW - padX..<padW:
+      result[yw + x] = result[yw + rightX]
+
+  for y in padH - padY..<padH:
+    let yw = y * padW
+    for x in 0..<padX:
+      result[yw + x] = result[botY + padX]
+    for x in padX..<padW - padX:
+      result[yw + x] = result[botY + x]
+    for x in padW - padX..<padW:
+      result[yw + x] = result[botY + rightX]
+
+func paddedWrap*[T: Color](img: Image[T], padX, padY: int): Image[T] =
+  result = img.paddedEmpty(padX, padY)
+  let
+    padW = result.w
+    padH = result.h
+    leftX = padW - padX * 2
+    topY = (padH - padY * 2) * padW
+
+  for y in padY..<padH - padY:
+    let yw = y * padW
+    for x in 0..<padX:
+      result[yw + x] = result[yw + x + leftX]
+    for x in padW - padX..<padW:
+      result[yw + x] = result[yw + x - leftX]
+
+  for y in 0..<padY:
+    let yw = y * padW
+    for x in 0..<padW:
+      result[yw + x] = result[yw + x + topY]
+
+  for y in padH - padY..<padH:
+    let yw = y * padW
+    for x in 0..<padW:
+      result[yw + x] = result[yw + x - topY]
+
+func paddedReflect*[T: Color](img: Image[T], padX, padY: int): Image[T] =
+  result = img.paddedEmpty(padX, padY)
+  let
+    padW = result.w
+    padH = result.h
+    leftX = padX * 2
+    rightX = (padW - padX) * 2 - 1
+    topY = padY * 2 * padW
+    botY = ((padH - padY) * 2 - 1) * padW
+
+  for y in padY..<padH - padY:
+    let yw = y * padW
+    for x in 0..<padX:
+      result[yw + x] = result[yw - x + leftX]
+    for x in padW - padX..<padW:
+      result[yw + x] = result[yw - x + rightX]
+
+  for y in 0..<padY:
+    let yw = y * padW
+    for x in 0..<padW:
+      result[yw + x] = result[topY - yw + x]
+
+  for y in padH - padY..<padH:
+    let yw = y * padW
+    for x in 0..<padW:
+      result[yw + x] = result[botY - yw + x]
+
+template toColorMode(t: typedesc[Color]): untyped =
+  when t is ColorA: RGBA else: RGB
 
 template importData[T: Color](r: var seq[T], s: seq[byte]) =
   when T is ColorRGBFAny:
@@ -117,41 +200,41 @@ template toExportData[T: Color](s: seq[T]): seq[byte] =
 proc loadImage*[T: Color](file: string): Image[T] =
   var
     w, h, channels: int
-    data = load(file, w, h, channels, T.colorToColorMode)
+    data = load(file, w, h, channels, T.toColorMode)
   result = initImage[T](w, h)
   result.data.importData data
 
 proc loadImageFromMemory*[T: Color](buffer: seq[byte]): Image[T] =
   var
     w, h, channels: int
-    data = loadFromMemory(buffer, w, h, channels, T.colorToColorMode)
+    data = loadFromMemory(buffer, w, h, channels, T.toColorMode)
   result = initImage[T](w, h)
   result.data.importData data
 
 proc savePNG*[T: Color](image: Image[T], file: string, strides = 0) =
-  if not writePNG(file, image.w, image.h, T.colorToColorMode, image.data.toExportData, strides):
+  if not write.writePNG(file, image.w, image.h, T.toColorMode, image.data.toExportData, strides):
     raise newException(IOError, "Failed to write the image to " & file)
 
 proc saveJPG*[T: Color](image: Image[T], file: string, quality: range[1..100] = 95) =
-  if not writeJPG(file, image.w, image.h, T.colorToColorMode, image.data.toExportData, quality):
+  if not write.writeJPG(file, image.w, image.h, T.toColorMode, image.data.toExportData, quality):
     raise newException(IOError, "Failed to write the image to " & file)
 
 proc saveBMP*[T: Color](image: Image[T], file: string) =
-  if not writeBMP(file, image.w, image.h, T.colorToColorMode, image.data.toExportData):
+  if not write.writeBMP(file, image.w, image.h, T.toColorMode, image.data.toExportData):
     raise newException(IOError, "Failed to write the image to " & file)
 
 proc saveTGA*[T: Color](image: Image[T], file: string, useRLE = true) =
-  if not writeTGA(file, image.w, image.h, T.colorToColorMode, image.data.toExportData, useRLE):
+  if not write.writeTGA(file, image.w, image.h, T.toColorMode, image.data.toExportData, useRLE):
     raise newException(IOError, "Failed to write the image to " & file)
 
 proc writePNG*[T: Color](image: Image[T], strides = 0): seq[byte] =
-  write.writePNG(image.w, image.h, T.colorToColorMode, image.data.toExportData, strides)
+  write.writePNG(image.w, image.h, T.toColorMode, image.data.toExportData, strides)
 
 proc writeJPG*[T: Color](image: Image[T], quality: range[1..100] = 95): seq[byte] =
-  write.writeJPG(image.w, image.h, T.colorToColorMode, image.data.toExportData, quality)
+  write.writeJPG(image.w, image.h, T.toColorMode, image.data.toExportData, quality)
 
 proc writeBMP*[T: Color](image: Image[T]): seq[byte] =
-  write.writeBMP(image.w, image.h, T.colorToColorMode, image.data.toExportData)
+  write.writeBMP(image.w, image.h, T.toColorMode, image.data.toExportData)
 
 proc writeTGA*[T: Color](image: Image[T], useRLE = true): seq[byte] =
-  write.writeTGA(image.w, image.h, T.colorToColorMode, image.data.toExportData, useRLE)
+  write.writeTGA(image.w, image.h, T.toColorMode, image.data.toExportData, useRLE)
