@@ -50,15 +50,15 @@ Enables safety checks on per-pixel operations (`[]`, `[]=`), to prevent illegal 
     - [ ] Ellipse
     - [ ] Bezier curve
 - Filtering
-    - [x] Greyscale
-    - [x] Negative
-    - [x] Sepia
-    - [x] Quantization
-    - Convolutional kernel routine
+    - [x] General convolutional kernel routine
         - [x] Smoothing
         - [x] Sharpening
         - [x] Edge detection
         - [x] Blur
-- [ ] Dithering
+    - [x] Greyscale
+    - [x] Negative
+    - [x] Sepia
+    - [x] Quantization
+- Dithering
     - [x] Some kernels
-- [ ] Documentation
+- Documentation
