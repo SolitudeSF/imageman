@@ -170,6 +170,18 @@ func paddedReflect*[T: Color](img: Image[T], padX, padY: int): Image[T] =
     for x in 0..<padW:
       result[yw + x] = result[botY - yw + x]
 
+template padEmpty*[T: Color](img: var Image[T], padX, padY: int) =
+  img = img.paddedEmpty(padX, padY)
+
+template padExtend*[T: Color](img: var Image[T], padX, padY: int) =
+  img = img.paddedExtend(padX, padY)
+
+template padWrap*[T: Color](img: var Image[T], padX, padY: int) =
+  img = img.paddedWrap(padX, padY)
+
+template padReflect*[T: Color](img: var Image[T], padX, padY: int) =
+  img = img.paddedReflect(padX, padY)
+
 template toColorMode(t: typedesc[Color]): untyped =
   when t is ColorA: RGBA else: RGB
 
