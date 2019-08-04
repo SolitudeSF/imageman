@@ -1,5 +1,5 @@
 import stb_image/[read, write]
-import colors
+import colors, util
 export ColorRGBU, ColorRGBAU, ColorRGBF, ColorRGBAF, colors.`[]`, colors.`[]=`, colors.len, colors.high, colors.`==`
 
 type
@@ -214,22 +214,6 @@ func paddedMirror*[T: Color](img: Image[T], padX, padY: int): Image[T] =
     for x in 0..<padW:
       result[yw + x] = result[botY - yw + x]
 
-func padEmpty*[T: Color](img: var Image[T], padX, padY: int) =
-  ## Pads the image with empty pixels.
-  img = img.paddedEmpty(padX, padY)
-
-func padExtend*[T: Color](img: var Image[T], padX, padY: int) =
-  ## Pads the image extending the edge pixels.
-  img = img.paddedExtend(padX, padY)
-
-func padWrap*[T: Color](img: var Image[T], padX, padY: int) =
-  ## Pads the image wrapping the image.
-  img = img.paddedWrap(padX, padY)
-
-func padMirror*[T: Color](img: var Image[T], padX, padY: int) =
-  ## Pads the image mirroring the image onto the padding.
-  img = img.paddedMirror(padX, padY)
-
 func padded*[T: Color](img: Image[T], padX, padY: int, kind: PadKind): Image[T] =
   ## Returns padded image with padding algorithm specified by `kind`.
   case kind
@@ -238,9 +222,11 @@ func padded*[T: Color](img: Image[T], padX, padY: int, kind: PadKind): Image[T] 
   of pkWrap: img.paddedWrap padX, padY
   of pkMirror: img.paddedMirror padX, padY
 
-func pad*[T: Color](img: var Image[T], padX, padY: int, kind: PadKind) =
-  ## Pads the image with padding algorithm specified by `kind`.
-  img = img.pad(padX, padY, kind)
+paddedEmpty.genMutating padEmpty, "Pads the image with empty pixels."
+paddedExtend.genMutating padExtend, "Pads the image extending the edge pixels."
+paddedWrap.genMutating padWrap, "Pads the image wrapping the image."
+paddedMirror.genMutating padMirror, "Pads the image mirroring the image onto the padding."
+padded.genMutating pad, "Pads the image with padding algorithm specified by `kind`."
 
 template toColorMode(t: typedesc[Color]): untyped =
   when t is ColorA: RGBA else: RGB

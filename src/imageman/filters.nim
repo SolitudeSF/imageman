@@ -1,4 +1,4 @@
-import images, colors
+import images, colors, util
 import math
 
 const
@@ -76,8 +76,8 @@ func withKernel*[T: Color](img: Image[T], k: openArray[array | seq | openArray],
         result[target].a = img[target].a
 
 template genFilter(n): untyped =
-  template `filtered n`*[T: Color](i: Image[T]): Image[T] = withKernel i, `kernel n`
-  template `filter n`*[T: Color](i: var Image[T]) = i = i.withKernel `kernel n`
+  func `filtered n`*[T: Color](i: Image[T]): Image[T] = withKernel i, `kernel n`
+  func `filter n`*[T: Color](i: var Image[T]) = i = i.withKernel `kernel n`
 
 genFilter Smoothing
 genFilter Sharpening
@@ -91,12 +91,12 @@ genFilter MotionBlur
 genFilter GaussianBlur5
 genFilter UnsharpMasking
 
-func quantize*(c: var ColorRGBFAny, factor: float32) =
+func quantize*[T: ColorRGBFAny](c: var T, factor: float32) =
   c[0] = round(factor * c[0]) / factor
   c[1] = round(factor * c[1]) / factor
   c[2] = round(factor * c[2]) / factor
 
-func quantized*(c: ColorRGBFAny, factor: float32): ColorRGBAF =
+func quantized*[T: ColorRGBFAny](c: T, factor: float32): T =
   result = c
   quantize result, factor
 
@@ -118,10 +118,10 @@ func filterGreyscale*[T: Color](image: var Image[T]) =
     pixel.b = c
 
 func filterNegative*[T: Color](image: var Image[T]) =
-    for pixel in image.data.mitems:
-      pixel.r = T.maxComponentValue - pixel.r
-      pixel.g = T.maxComponentValue - pixel.g
-      pixel.b = T.maxComponentValue - pixel.b
+  for pixel in image.data.mitems:
+    pixel.r = T.maxComponentValue - pixel.r
+    pixel.g = T.maxComponentValue - pixel.g
+    pixel.b = T.maxComponentValue - pixel.b
 
 func filterSepia*[T: Color](image: var Image[T]) =
   for pixel in image.data.mitems:
@@ -130,11 +130,6 @@ func filterSepia*[T: Color](image: var Image[T]) =
     pixel.g = (T.componentType) min(prev.r.precise * 0.349 + prev.g.precise * 0.686 + prev.b.precise * 0.168, T.maxComponentValue.precise)
     pixel.b = (T.componentType) min(prev.r.precise * 0.272 + prev.g.precise * 0.534 + prev.b.precise * 0.131, T.maxComponentValue.precise)
 
-template genFiltered(name): untyped =
-  func `filtered name`*[T: Color](image: Image[T]): Image[T] =
-    result = image
-    result.`filter name`
-
-genFiltered Greyscale
-genFiltered Negative
-genFiltered Sepia
+filterGreyscale.genNonMutating filteredGreyscale
+filterNegative.genNonMutating filteredNegative
+filterSepia.genNonMutating filteredSepia
