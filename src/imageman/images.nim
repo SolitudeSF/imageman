@@ -37,45 +37,27 @@ template h*(i: Image): int =
 
 template `[]`*(i: Image, x, y: int): Color =
   ## Sugar for accessing the pixel value using x, y coordinates like `i[x, y]`.
-  when defined(imagemanSafe):
-    if i.contains(x, y): i.data[x + y * i.w]
-  else:
-    i.data[x + y * i.w]
+  i.data[x + y * i.w]
 
 template `[]`*(i: Image, x: int): Color =
   ## Alias for accessing `i.data` values.
-  when defined(imagemanSafe):
-    if x < i.data.len: i.data[x]
-  else:
-    i.data[x]
+  i.data[x]
 
 template `[]`*(i: Image, p: Point): Color =
   ## Access `i.data` using Point type.
-  when defined(imagemanSafe):
-    if p in i: i.data[p.x + p.y * i.w]
-  else:
-    i.data[p.x + p.y * i.w]
+  i.data[p.x + p.y * i.w]
 
 template `[]=`*(i: var Image, x, y: int, c: Color) =
   ## Sugar for setting the pixel value using x, y coordinates like `i[x, y]`.
-  when defined(imagemanSafe):
-    if i.contains(x, y): i.data[x + y * i.w] = c
-  else:
-    i.data[x + y * i.w] = c
+  i.data[x + y * i.w] = c
 
 template `[]=`*(i: var Image, x: int, c: Color) =
   ## Alias for setting `i.data` values.
-  when defined(imagemanSafe):
-    if x < i.data.len: i.data[x] = c
-  else:
-    i.data[x] = c
+  i.data[x] = c
 
 template `[]=`*(i: var Image, p: Point, c: Color) =
   ## Set `i.data` using Point type.
-  when defined(imagemanSafe):
-    if p in i: i.data[p.x + p.y * i.w] = c
-  else:
-    i.data[p.x + p.y * i.w] = c
+  i.data[p.x + p.y * i.w] = c
 
 func initRect*(x, y, w, h: int): Rect =
   ## Creates new `Rect` object.

@@ -17,9 +17,6 @@ To have some boilerplate for recreative programming with images.
 ## Installation
 `nimble install imageman`
 
-## `imagemanSafe` flag
-Enables safety checks on per-pixel operations (`[]`, `[]=`), to prevent illegal array access
-
 ## Features
 - Easy manipulation of individual pixel components
 - Image loading/saving
@@ -33,22 +30,6 @@ Enables safety checks on per-pixel operations (`[]`, `[]=`), to prevent illegal 
     - [x] `ColorRGBAU` - 8bit uint 4 components
     - [x] `ColorRGBF` - 32bit float 3 components
     - [x] `ColorRGBAF` - 32bit float 4 components
-- Resizing
-    - [x] Nearest neighbour
-    - [x] Bilinear
-    - [x] Trilinear
-    - [x] Bicubic
-    - [ ] Lanczos
-    - [ ] Catmull-Rom
-    - [ ] Cubic Hermite
-- Rotating
-    - [ ] Vertically, Horizontally
-    - [ ] Radial
-- Drawing
-    - [x] Line
-    - [x] Circle
-    - [ ] Ellipse
-    - [ ] Bezier curve
 - Filtering
     - [x] General convolutional kernel routine
         - [x] Smoothing
@@ -61,4 +42,20 @@ Enables safety checks on per-pixel operations (`[]`, `[]=`), to prevent illegal 
     - [x] Quantization
 - Dithering
     - [x] Some kernels
+- Resizing
+    - [x] Nearest neighbour
+    - [x] Bilinear
+    - [x] Trilinear
+    - [x] Bicubic
+    - [ ] Lanczos
+    - [ ] Catmull-Rom
+    - [ ] Cubic Hermite
+- Drawing
+    - [x] Line
+    - [x] Circle
+    - [ ] Ellipse
+    - [ ] Bezier curve
+- Rotating
+    - [ ] Vertically, Horizontally
+    - [ ] Radial
 - Documentation
