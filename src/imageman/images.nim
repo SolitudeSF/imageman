@@ -82,6 +82,11 @@ func initImage*[T: Color](w, h: Natural): Image[T] =
   ## Creates new image with specified color mode and dimensions.
   Image[T](data: newSeq[T](w * h), height: h, width: w)
 
+func fill*[T: Color](i: var Image[T], c: T) =
+  ## Fills entire image with single color.
+  for n in 0..i.data.high:
+    i[n] = c
+
 func copyRegion*[T: Color](image: Image[T], x, y, w, h: int): Image[T] =
   ## Copies region at x, y coordinates with w, h dimensions into a new image.
   result = initImage[T](w, h)
