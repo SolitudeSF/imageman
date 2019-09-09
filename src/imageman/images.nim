@@ -215,6 +215,45 @@ paddedWrap.genMutating padWrap, "Pads the image wrapping the image."
 paddedMirror.genMutating padMirror, "Pads the image mirroring the image onto the padding."
 padded.genMutating pad, "Pads the image with padding algorithm specified by `kind`."
 
+func flippedHoriz*[T: Color](img: Image[T]): Image[T] =
+  ## Returns image flipped horizontally
+  result = img
+  for y in 0..<img.h:
+    let
+      yw = y * img.w
+      yw1 = yw + img.w - 1
+    for i in 0..<img.w:
+      result[yw + i] = img[yw1 - i]
+
+func flippedVert*[T: Color](img: Image[T]): Image[T] =
+  ## Returns image flipped vertically
+  result = img
+  for y in 0..<img.h div 2:
+    let
+      a = y * img.w..<(y + 1) * img.w
+      b = (img.h - y - 1) * img.w..<(img.h - y) * img.w
+    result.data[a] = img.data[b]
+    result.data[b] = img.data[a]
+
+func flipHoriz*[T: Color](img: var Image[T]) =
+  ## Flips images horizontally
+  for y in 0..<img.h:
+    let
+      yw = y * img.w
+      yw1 = yw + img.w - 1
+    for x in 0..<img.w div 2:
+      swap img[yw + x], img[yw1 - x]
+
+func flipVert*[T: Color](img: var Image[T]) =
+  ## Flips images vertically
+  for y in 0..<img.h div 2:
+    let
+      a = (y * img.w)..<(y + 1) * img.w
+      b = (img.h - y - 1) * img.w..<(img.h - y) * img.w
+    let t = img.data[a]
+    img.data[a] = img.data[b]
+    img.data[b] = t
+
 template toColorMode(t: typedesc[Color]): untyped =
   when t is ColorA: RGBA else: RGB
 
