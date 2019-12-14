@@ -5,3 +5,7 @@ nimcache
 !tests/image.jpg
 tests/t*
 !tests/t*.nim
+examples/*
+!examples/*.nim
+!examples/*.nims
+!examples/sample.png
