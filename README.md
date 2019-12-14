@@ -56,6 +56,6 @@ To have some boilerplate for recreative programming with images.
     - [ ] Ellipse
     - [ ] Bezier curve
 - Rotating
-    - [ ] Vertically, Horizontally
+    - [x] Vertically, Horizontally
     - [ ] Radial
 - Documentation
