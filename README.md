@@ -59,3 +59,6 @@ To have some boilerplate for recreative programming with images.
     - [x] Vertically, Horizontally
     - [ ] Radial
 - Documentation
+
+## Examples
+See [examples](./examples) directory.
