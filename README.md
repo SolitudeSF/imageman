@@ -58,6 +58,7 @@ To have some boilerplate for recreative programming with images.
 - Rotating
     - [x] Vertically, Horizontally
     - [ ] Radial
+- Cropping
 - Documentation
 
 ## Examples
