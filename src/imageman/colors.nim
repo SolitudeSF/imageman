@@ -6,11 +6,12 @@ type
   ColorRGBAU* = distinct array[4, uint8]
   ColorRGBF* = distinct array[3, float32]
   ColorRGBAF* = distinct array[4, float32]
+  ColorHSL* = distinct array[3, float32]
   ColorRGBUAny* = ColorRGBU | ColorRGBAU
   ColorRGBFAny* = ColorRGBF | ColorRGBAF
   ColorRGBAny* = ColorRGBUAny | ColorRGBFAny
   ColorA* = ColorRGBAU | ColorRGBAF
-  Color* = ColorRGBAny
+  Color* = ColorRGBAny | ColorHSL
 
 template asBase*(c: typed): untyped = distinctBase(typeof c) c
 template `[]`*[T: Color](c: T, n: Ordinal): auto = asBase(c)[n]
@@ -21,14 +22,20 @@ template high*(c: typedesc[Color]): int = distinctBase(c).high
 template high*(c: Color): int = asBase(c).high
 template `==`*[T: Color](x, y: T): bool = asBase(x) == asBase(y)
 
-template r*(c: Color): untyped = c[0]
-template g*(c: Color): untyped = c[1]
-template b*(c: Color): untyped = c[2]
+template r*(c: ColorRGBAny): untyped = c[0]
+template g*(c: ColorRGBAny): untyped = c[1]
+template b*(c: ColorRGBAny): untyped = c[2]
 template a*(c: ColorA): untyped = c[3]
-template `r=`*(c: var Color, i: untyped) = c[0] = i
-template `g=`*(c: var Color, i: untyped) = c[1] = i
-template `b=`*(c: var Color, i: untyped) = c[2] = i
+template `r=`*(c: var ColorRGBAny, i: untyped) = c[0] = i
+template `g=`*(c: var ColorRGBAny, i: untyped) = c[1] = i
+template `b=`*(c: var ColorRGBAny, i: untyped) = c[2] = i
 template `a=`*(c: var ColorA, i: untyped) = c[3] = i
+template h*(c: ColorHSL): float32 = c[0]
+template s*(c: ColorHSL): float32 = c[1]
+template l*(c: ColorHSL): float32 = c[2]
+template `h=`*(c: var ColorHSL, i: float32) = c[0] = i
+template `s=`*(c: var ColorHSL, i: float32) = c[1] = i
+template `l=`*(c: var ColorHSL, i: float32) = c[2] = i
 
 template componentType*(t: typedesc[Color]): typedesc =
   ## Returns component type of a given color type.
@@ -59,10 +66,10 @@ func toUint8*(c: float32): uint8 =
   ## Converts 0..1 float32 to 0..255 uint8
   uint8(c * 255)
 
-func toRGB*(c: ColorRGBAU): ColorRGBU =
+func toRGBU*(c: ColorRGBAU): ColorRGBU =
   copyMem addr result, unsafeAddr c, sizeof ColorRGBU
 
-func toRGBA*(c: ColorRGBU): ColorRGBAU =
+func toRGBAU*(c: ColorRGBU): ColorRGBAU =
   copyMem addr result, unsafeAddr c, sizeof ColorRGBU
   result.a = 255
 
@@ -76,7 +83,7 @@ func toRGBAF*(c: ColorRGBF): ColorRGBAF =
 func toRGBF*(c: ColorRGBAny): ColorRGBF =
   ColorRGBF [c.r.toLinear, c.g.toLinear, c.b.toLinear]
 
-func toRGB*(c: ColorRGBFAny): ColorRGBU =
+func toRGBU*(c: ColorRGBFAny): ColorRGBU =
   ColorRGBU [c.r.toUint8, c.g.toUint8, c.b.toUint8]
 
 func toRGBAF*(c: ColorRGBAU): ColorRGBAF =
@@ -85,8 +92,41 @@ func toRGBAF*(c: ColorRGBAU): ColorRGBAF =
 func toRGBAF*(c: ColorRGBU): ColorRGBAF =
   ColorRGBAF [c.r.toLinear, c.g.toLinear, c.b.toLinear, 1.0]
 
-func toRGBA*(c: ColorRGBAF): ColorRGBAU =
+func toRGBAU*(c: ColorRGBAF): ColorRGBAU =
   ColorRGBAU [c.r.toUint8, c.g.toUint8, c.b.toUint8, c.a.toUint8]
+
+func toRGBF*(c: ColorHSL): ColorRGBF =
+  let a = c.s * min(c.l, 1 - c.l)
+
+  template f(n: float32): float32 =
+    let k = (n + c.h / 30) mod 12
+    c.l - a * max(-1, min(1, min(k - 3, 9 - k)))
+
+  ColorRGBF [f 0, f 8, f 4]
+
+func toHSL*(c: ColorRGBF): ColorHSL =
+  let
+    minC = min(c.r, min(c.g, c.b))
+    maxC = max(c.r, max(c.g, c.b))
+    chroma = maxC - minC
+
+  result.l = (minC + maxC) / 2
+
+  if chroma == 0:
+    result.h = 0
+  elif maxC == c.r:
+    result.h = (c.g - c.b) / chroma
+  elif maxC == c.g:
+    result.h = 2 + (c.b - c.r) / chroma
+  elif maxC == c.b:
+    result.h = 4 + (c.r - c.g) / chroma
+
+  result.h = min(result.h * 60, 360)
+  if result.h < 0:
+    result.h += 360
+
+  if chroma != 0:
+    result.s = chroma / (1 - abs(2 * result.l - 1))
 
 func blendColorValue*[T: ColorComponent](a, b: T, t: float32): T {.inline.} =
   ## Blends two color with ratio.
@@ -105,6 +145,9 @@ func `$`*(c: ColorA): string =
 
 func `$`*(c: ColorRGBU | ColorRGBF): string =
   "(r: " & $c.r & ", g: " & $c.g & ", b: " & $c.b & ")"
+
+func `$`*(c: ColorHSL): string =
+  "(h: " & $c.h & ", s: " & $c.s & ", l: " & $c.l & ")"
 
 func `~=`*(a, b: ColorRGBAF, e = 0.01'f32): bool =
   ## Compares colors with given accuracy.
