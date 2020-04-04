@@ -97,6 +97,10 @@ func copyRegion*[T: Color](image: Image[T], r: Rect): Image[T] =
   ## Copies region specified by a rectangle into a new image.
   copyRegion(image, r.x, r.y, r.w, r.h)
 
+func `[]`*[T: Color](image: Image[T], x, y: Slice[int]): Image[T] =
+  ## Slice syntax for region copy.
+  image.copyRegion(min(x.a, x.b), min(y.a, y.b), abs(x.b - x.a) + 1, abs(y.b - y.a) + 1)
+
 func blit*[T: Color](dest: var Image[T], src: Image, x, y: int) =
   ## Blit image `src` onto the `dest` in specified coordinates
   for i in 0..<src.height:
