@@ -285,7 +285,10 @@ proc loadImage*[T: Color](file: string): Image[T] =
   ## Loads image with specified color mode from a filename.
   var
     w, h, channels: int
-    data = load(file, w, h, channels, T.toColorMode)
+    data = try:
+      load(file, w, h, channels, T.toColorMode)
+    except STBIException as e:
+      raise newException(IOError, e.msg)
   result = initImage[T](w, h)
   result.data.importData data
 
@@ -293,7 +296,10 @@ proc loadImageFromMemory*[T: Color](buffer: seq[byte]): Image[T] =
   ## Loads image with specified color mode from a sequence of bytes.
   var
     w, h, channels: int
-    data = loadFromMemory(buffer, w, h, channels, T.toColorMode)
+    data = try:
+      loadFromMemory(buffer, w, h, channels, T.toColorMode)
+    except STBIException as e:
+      raise newException(IOError, e.msg)
   result = initImage[T](w, h)
   result.data.importData data
 
