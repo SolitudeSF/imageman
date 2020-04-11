@@ -66,36 +66,36 @@ func toUint8*(c: float32): uint8 =
   ## Converts 0..1 float32 to 0..255 uint8
   uint8(c * 255)
 
-func toRGBU*(c: ColorRGBAU): ColorRGBU =
+func to*[T: ColorRGBU](c: ColorRGBAU, t: typedesc[T]): T =
   copyMem addr result, unsafeAddr c, sizeof ColorRGBU
 
-func toRGBAU*(c: ColorRGBU): ColorRGBAU =
+func to*[T: ColorRGBAU](c: ColorRGBU, t: typedesc[T]): T =
   copyMem addr result, unsafeAddr c, sizeof ColorRGBU
   result.a = 255
 
-func toRGBF*(c: ColorRGBAF): ColorRGBF =
+func to*[T: ColorRGBF](c: ColorRGBAF, t: typedesc[T]): T =
   copyMem addr result, unsafeAddr c, sizeof ColorRGBF
 
-func toRGBAF*(c: ColorRGBF): ColorRGBAF =
+func to*[T: ColorRGBAF](c: ColorRGBF, t: typedesc[T]): T =
   copyMem addr result, unsafeAddr c, sizeof ColorRGBF
   result.a = 1.0
 
-func toRGBF*(c: ColorRGBAny): ColorRGBF =
+func to*[T: ColorRGBF](c: ColorRGBAny, t: typedesc[T]): T =
   ColorRGBF [c.r.toLinear, c.g.toLinear, c.b.toLinear]
 
-func toRGBU*(c: ColorRGBFAny): ColorRGBU =
+func to*[T: ColorRGBU](c: ColorRGBFAny, t: typedesc[T]): T =
   ColorRGBU [c.r.toUint8, c.g.toUint8, c.b.toUint8]
 
-func toRGBAF*(c: ColorRGBAU): ColorRGBAF =
+func to*[T: ColorRGBAF](c: ColorRGBAU, t: typedesc[T]): T =
   ColorRGBAF [c.r.toLinear, c.g.toLinear, c.b.toLinear, c.a.toLinear]
 
-func toRGBAF*(c: ColorRGBU): ColorRGBAF =
+func to*[T: ColorRGBAF](c: ColorRGBU, t: typedesc[T]): T =
   ColorRGBAF [c.r.toLinear, c.g.toLinear, c.b.toLinear, 1.0]
 
-func toRGBAU*(c: ColorRGBAF): ColorRGBAU =
+func to*[T: ColorRGBAU](c: ColorRGBAF, t: typedesc[T]): T =
   ColorRGBAU [c.r.toUint8, c.g.toUint8, c.b.toUint8, c.a.toUint8]
 
-func toRGBF*(c: ColorHSL): ColorRGBF =
+func to*[T: ColorRGBF](c: ColorHSL, t: typedesc[T]): T =
   let a = c.s * min(c.l, 1 - c.l)
 
   template f(n: float32): float32 =
@@ -104,7 +104,7 @@ func toRGBF*(c: ColorHSL): ColorRGBF =
 
   ColorRGBF [f 0, f 8, f 4]
 
-func toHSL*(c: ColorRGBF): ColorHSL =
+func to*[T: ColorHSL](c: ColorRGBF, t: typedesc[T]): T =
   let
     minC = min(c.r, min(c.g, c.b))
     maxC = max(c.r, max(c.g, c.b))
