@@ -59,6 +59,8 @@ template `[]=`*(i: var Image, p: Point, c: Color) =
   ## Set `i.data` using Point type.
   i.data[p.x + p.y * i.w] = c
 
+template colorType*[T: Color](i: Image[T]): typedesc[T] = T
+
 func initRect*(x, y, w, h: int): Rect =
   ## Creates new `Rect` object.
   Rect(x: x, y: y, w: w, h: h)
@@ -81,6 +83,7 @@ func toRect*(a, b: Point): Rect =
 func initImage*[T: Color](w, h: Natural): Image[T] =
   ## Creates new image with specified color mode and dimensions.
   Image[T](data: newSeq[T](w * h), height: h, width: w)
+
 
 func converted*[I, T: Color](i: Image[I], t: typedesc[T]): Image[T] =
   ## Converts image color mode if appropriate converter found.
