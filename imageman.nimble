@@ -8,7 +8,7 @@ srcDir        = "src"
 
 # Dependencies
 
-requires "nim >= 1.0.0"
+requires "nim >= 1.2.0"
 requires "stb_image >= 2.2"
 
 task examples, "Run examples":

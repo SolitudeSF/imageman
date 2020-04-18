@@ -1,4 +1,4 @@
-import math, random, sugar
+import math, random, typetraits
 
 type
   ColorComponent* = uint8 | float32
@@ -13,14 +13,13 @@ type
   ColorA* = ColorRGBAU | ColorRGBAF
   Color* = ColorRGBAny | ColorHSL
 
-template asBase*(c: typed): untyped = distinctBase(typeof c) c
-template `[]`*[T: Color](c: T, n: Ordinal): auto = asBase(c)[n]
-template `[]=`*[T: Color](c: var T, n: Natural, v) = asBase(c)[n] = v
+template `[]`*[T: Color](c: T, n: Ordinal): auto = distinctBase(c)[n]
+template `[]=`*[T: Color](c: var T, n: Natural, v) = distinctBase(c)[n] = v
 template len*(c: typedesc[Color]): int = distinctBase(c).len
-template len*(c: Color): int = asBase(c).len
+template len*(c: Color): int = distinctBase(c).len
 template high*(c: typedesc[Color]): int = distinctBase(c).high
-template high*(c: Color): int = asBase(c).high
-template `==`*[T: Color](x, y: T): bool = asBase(x) == asBase(y)
+template high*(c: Color): int = distinctBase(c).high
+template `==`*[T: Color](x, y: T): bool = distinctBase(x) == distinctBase(y)
 
 template r*(c: ColorRGBAny): untyped = c[0]
 template g*(c: ColorRGBAny): untyped = c[1]
