@@ -91,6 +91,9 @@ func to*[T: ColorRGBAF](c: ColorRGBAU, t: typedesc[T]): T =
 func to*[T: ColorRGBAF](c: ColorRGBU, t: typedesc[T]): T =
   ColorRGBAF [c.r.toLinear, c.g.toLinear, c.b.toLinear, 1.0]
 
+func to*[T: ColorRGBAU](c: ColorRGBF, t: typedesc[T]): T =
+  ColorRGBAU [c.r.toUint8, c.g.toUint8, c.b.toUint8, 255]
+
 func to*[T: ColorRGBAU](c: ColorRGBAF, t: typedesc[T]): T =
   ColorRGBAU [c.r.toUint8, c.g.toUint8, c.b.toUint8, c.a.toUint8]
 
