@@ -27,10 +27,35 @@ template readImageImpl(w, h, channels, io: untyped): untyped =
       raise newException(IOError, e.msg)
   importData w, h, data
 
-proc readImage*[T: Color](buffer: seq[byte]): Image[T] =
+# Workaround for missing openArray overload
+when defined(windows) and defined(vcc):
+  {.pragma: stbcall, stdcall.}
+else:
+  {.pragma: stbcall, cdecl.}
+
+proc stbi_image_free(retval_from_stbi_load: pointer) {.importc: "stbi_image_free", stbcall.}
+proc stbi_load_from_memory(buffer: ptr cuchar; len: cint; x, y, channels_in_file: var cint;
+  desired_channels: cint): ptr cuchar {.importc: "stbi_load_from_memory", stbcall.}
+
+proc loadFromMemory*(data: openArray[char]; x, y, channels_in_file: var int; desired_channels: int): seq[byte] =
+  var
+    castedBuffer = cast[ptr cuchar](data[0].unsafeAddr)
+    w, h, components: cint
+  let data = stbi_load_from_memory(castedBuffer, data.len.cint, w, h, components, desired_channels.cint)
+  if data == nil:
+    raise newException(STBIException, failureReason())
+  x = w.int
+  y = h.int
+  channels_in_file = components.int
+  let actualChannels = if desired_channels > 0: desired_channels else: components.int
+  result = newSeq[byte](x * y * actualChannels)
+  copyMem(result[0].addr, data, result.len)
+  stbi_image_free(data)
+
+proc readImage*[T: Color](data: openArray[char]): Image[T] =
   ## Reads image with specified color mode from a sequence of bytes.
   readImageImpl width, height, channels:
-    loadFromMemory(buffer, width, height, channels, T.toColorMode)
+    loadFromMemory(data, width, height, channels, T.toColorMode)
 
 proc readImage*[T: Color](file: File): Image[T] =
   ## Reads image with specified color mode from a file

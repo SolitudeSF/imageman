@@ -1,4 +1,4 @@
-import images, colors
+import ./imagetype, ../colors
 
 when defined(windows):
   const libname = "libjpeg.dll"
@@ -272,7 +272,7 @@ template readJPEGImpl(source: typed, dctMethod: JpegDCTMethod,
 
   when source is File:
     jpeg_stdio_src dinfop, source
-  elif source is openArray or source is string or source is seq:
+  elif source is openArray[char]:
     jpeg_mem_src dinfop, cast[ptr cuchar](unsafeAddr source[0]), source.len.culong
 
   discard jpeg_read_header(dinfop, 1)
@@ -284,7 +284,7 @@ template readJPEGImpl(source: typed, dctMethod: JpegDCTMethod,
   discard jpeg_start_decompress dinfop
 
   var
-    r = initImage[ColorRGBU](dinfo.output_width, dinfo.output_height)
+    r = initImage[ColorRGBU](dinfo.outputWidth, dinfo.outputHeight)
     rows = newSeq[ptr UncheckedArray[cuchar]](r.height)
     address = cast[int](addr r[0])
   let rowWidth = r.width * sizeof r.colorType
@@ -312,7 +312,7 @@ proc readJPEG*[T: Color](file: File, dctMethod = jDCTmISlow,
 
 proc readJPEG*[T: Color](data: openArray[char], dctMethod = jDCTmISlow,
   fancyUpsampling = false, blockSmoothing = true): Image[T] =
-  readJPEGImpl file, dctMethod, fancyUpsampling, blockSmoothing
+  readJPEGImpl data, dctMethod, fancyUpsampling, blockSmoothing
 
 proc loadJPEG*[T: Color](path: string, dctMethod = jDCTmISlow,
   fancyUpsampling = false, blockSmoothing = true): Image[T] =

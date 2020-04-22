@@ -1,4 +1,4 @@
-import images, colors
+import ./imagetype, ../colors
 
 when defined(windows):
   const libname = "libpng16.dll"
@@ -98,7 +98,7 @@ template readPNGImpl(source: typed): untyped =
 
   when source is File:
     png_init_io png, source
-  elif source is string:
+  elif source is openArray[char]:
     var reader = DataReader(start: unsafeAddr source[0], limit: source.len.uint)
     png_set_read_fn png, addr reader, pngReadString
 
@@ -158,8 +158,7 @@ template readPNGImpl(source: typed): untyped =
     return r.converted(T)
 
 proc readPNG*[T: Color](file: File): Image[T] = readPNGImpl file
-
-proc readPNG*[T: Color](data: string): Image[T] = readPNGImpl data
+proc readPNG*[T: Color](data: openArray[char]): Image[T] = readPNGImpl data
 
 proc loadPNG*[T: Color](path: string): Image[T] =
   let file = open(path, fmRead)
