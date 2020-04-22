@@ -3,10 +3,11 @@ Rudimentary image manipulation (((framework)))
 
 Some things may or may not work correctly.
 
-Some example usage in tests.
+Check examples directory for short demonstration.
 
 ## Why
-To have some boilerplate for recreative programming with images.
+~~To have some boilerplate for recreational programming with images.~~
+Manipulate. Images.
 
 ## Projects using imageman
 
@@ -19,17 +20,17 @@ To have some boilerplate for recreative programming with images.
 
 ## Features
 - Easy manipulation of individual pixel components
-- Image loading/saving
-    - [x] PNG
-    - [X] JPG
+- Image reading/writing
+    - [x] PNG using `libpng`
+    - [X] JPG using `libjpeg(-turbo)`
     - [x] BMP
     - [x] TGA
-    - [ ] FF
 - Color modes
     - [x] `ColorRGBU` - 8bit uint 3 components
     - [x] `ColorRGBAU` - 8bit uint 4 components
     - [x] `ColorRGBF` - 32bit float 3 components
     - [x] `ColorRGBAF` - 32bit float 4 components
+    - [x] `ColorHSL` - 32bit float
 - Filtering
     - [x] General convolutional kernel routine
         - [x] Smoothing
