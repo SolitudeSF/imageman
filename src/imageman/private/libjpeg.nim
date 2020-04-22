@@ -23,6 +23,8 @@ const
   after80 = JPEG_LIB_VERSION >= 80
 
 type
+  Boolean = (when defined(windows): cuchar else: cint)
+
   JpegColorSpace {.size: 4.} = enum
     jcsUnknown
     jcsGrayscale
@@ -55,12 +57,14 @@ type
   JpegCommon = object
     err: ptr JpegErrorMgr
     mem, progress, clientData: pointer
-    isDecompressor, globalInt: cint
+    isDecompressor: Boolean
+    globalInt: cint
 
   JpegCompress = object
     err: ptr JpegErrorMgr
     mem, progress, clientData: pointer
-    isDecompressor, globalInt: cint
+    isDecompressor: Boolean
+    globalInt: cint
     dest: ptr JpegDestinationMgr
     imageWidth, imageHeight: cuint
     inputComponents: cint
@@ -82,18 +86,20 @@ type
     arithAcK: array[NUM_ARITH_TBLS, cuchar]
     numScans: cint
     scanInfo: pointer
-    rawDataIn, arithCode, optimizeCoding, cCIR601sampling: cint
+    rawDataIn, arithCode, optimizeCoding, cCIR601sampling: Boolean
     when after70:
-      doFancyDownsampling: cint
+      doFancyDownsampling: Boolean
     smoothingFactor: cint
     dctMethod: JpegDCTMethod
     restartInterval: cuint
-    restartInRows, writeJFIFHeader: cint
+    restartInRows: cint
+    writeJFIFHeader: Boolean
     jfifMajorVersion, jfifMinorVersion, densityUnit: cuchar
     xDensity, yDensity: cushort
-    writeAdobeMarker: cint
+    writeAdobeMarker: Boolean
     nextScanline: cuint
-    progressiveMode, maxHSampFactor, maxVSampFactor: cint
+    progressiveMode: Boolean
+    maxHSampFactor, maxVSampFactor: cint
     when after70:
       minDCTHScaledSize, minDCTVScaledSize: cint
     totaliMCURows: cuint
@@ -114,19 +120,21 @@ type
   JpegDecompress = object
     err: ptr JpegErrorMgr
     mem, progress, clientData: pointer
-    isDecompressor, globalInt: cint
+    isDecompressor: Boolean
+    globalInt: cint
     src: pointer
     imageWidth, imageHeight: cuint
     numComponents: cint
     jpegColorSpace, outColorSpace: JpegColorSpace
     scaleNum, scaleDenom: cuint
     outputGamma: cdouble
-    bufferedImage, rawDataOut: cint
+    bufferedImage, rawDataOut: Boolean
     dctMethod: JpegDCTMethod
-    doFancyUpsampling, doBlockSmoothing, quantizeColors: cint
+    doFancyUpsampling, doBlockSmoothing, quantizeColors: Boolean
     ditherMode: JpegDitherMode
-    twoPassQuantize, desiredNumberOfColors, enable1passQuant,
-      enableExternalQuant, enable2passQuant: cint
+    twoPassQuantize: Boolean
+    desiredNumberOfColors: cint
+    enable1passQuant, enableExternalQuant, enable2passQuant: Boolean
     outputWidth, outputHeight: cuint
     outColorComponents, outputComponents, recOutbufHeight,
       actualNumberOfColors: cint
@@ -143,18 +151,18 @@ type
     dataPrecision: cint
     compInfo: ptr UncheckedArray[JpegComponentInfo]
     when after80:
-      isBaseline: cint
-    progressiveMode, arithCode: cint
+      isBaseline: Boolean
+    progressiveMode, arithCode: Boolean
     arithDcL: array[NUM_ARITH_TBLS, cuchar]
     arithDcU: array[NUM_ARITH_TBLS, cuchar]
     arithAcK: array[NUM_ARITH_TBLS, cuchar]
     restartInterval: cuint
-    sawJFIFMarker: cint
+    sawJFIFMarker: Boolean
     jFIFMajorVersion, jFIFMinorVersion, densityUnit: cuchar
     xDensity, yDensity: cushort
-    writeAdobeMarker: cint
+    sawAdobeMarker: Boolean
     adobeTransform: cuchar
-    cCIR601Sampling: cint
+    cCIR601Sampling: Boolean
     markerList: pointer
     maxHSampFactor, maxVSampFactor: cint
     when after70:
@@ -200,7 +208,7 @@ type
     nextOutputByte: ptr cuchar
     freeInBuffer: csize_t
     initDestination: proc(cinfo: ptr JpegCompress) {.nimcall.}
-    emptyOutputBuffer: proc(cinfo: ptr JpegCompress): cint {.nimcall.}
+    emptyOutputBuffer: proc(cinfo: ptr JpegCompress): Boolean {.nimcall.}
     termDestination: proc(cinfo: ptr JpegCompress) {.nimcall.}
 
   DestinationMgr[T] = object
@@ -216,8 +224,9 @@ type
     else:
       dCTScaledSize: cint
     downsampledWidth, downsampledHeight: cuint
-    componentNeeded, mCUWidth, mCUHeight, mCUBlocks, mCUSampleWidth,
-      lastColWidth, lastRowHeight: cint
+    componentNeeded: Boolean
+    mCUWidth, mCUHeight, mCUBlocks, mCUSampleWidth, lastColWidth,
+      lastRowHeight: cint
     quantTable, dctTable: pointer
 
   JSAMPROW = ptr UncheckedArray[cuchar]
@@ -247,6 +256,9 @@ proc jpeg_write_scanlines(cinfo: ptr JpegCompress, scanlines: JSAMPARRAY,
 proc jpeg_finish_compress(cinfo: ptr JpegCompress): cint
 
 {.pop.}
+
+proc toBoolean(b: bool): Boolean =
+  if b: 1.Boolean else: 0.Boolean
 
 proc errorHandler(cinfo: ptr JpegCommon) =
   let err = cast[ptr JpegErrorMgr](cinfo.err)
@@ -278,8 +290,8 @@ template readJPEGImpl(source: typed, dctMethod: JpegDCTMethod,
   discard jpeg_read_header(dinfop, 1)
 
   dinfo.dctMethod = dctMethod
-  dinfo.doFancyUpsampling = fancyUpsampling.cint
-  dinfo.doBlockSmoothing = blockSmoothing.cint
+  dinfo.doFancyUpsampling = toBoolean(fancyUpsampling)
+  dinfo.doBlockSmoothing = toBoolean(blockSmoothing)
 
   discard jpeg_start_decompress dinfop
 
@@ -332,14 +344,14 @@ proc initDestination[T](cinfo: ptr JpegCompress) =
   a.pub.nextOutputByte = addr a.buffer[0]
   a.pub.freeInBuffer = a.buffer[].len.csize_t
 
-proc emptyOutputBuffer[T](cinfo: ptr JpegCompress): cint =
+proc emptyOutputBuffer[T](cinfo: ptr JpegCompress): Boolean =
   let
     a = cast[ptr DestinationMgr[T]](cinfo.dest)
     size = a.buffer[].len
   a.buffer[].setLen(size * 2)
   a.pub.nextOutputByte = addr a.buffer[][size]
   a.pub.freeInBuffer = size.csize_t
-  result = 1
+  result = toBoolean(true)
 
 proc termDestination[T](cinfo: ptr JpegCompress) =
   let a = cast[ptr DestinationMgr[T]](cinfo.dest)
@@ -374,7 +386,7 @@ template writeJPEGImpl[T: Color](img: Image[T], dst: typed, quality: int,
 
   jpeg_set_defaults cinfop
   jpeg_set_quality cinfop, quality.cint, 0
-  cinfo.optimizeCoding = optimizeCoding.cint
+  cinfo.optimizeCoding = toBoolean(optimizeCoding)
   cinfo.dctMethod = dctMethod
 
   discard jpeg_start_compress(cinfop, 1)
