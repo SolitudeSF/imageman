@@ -1,4 +1,4 @@
-import colors, util, private/[backends, imagetype]
+import ./colors, ./util, ./private/[backends, imagetype]
 export backends, imagetype
 export ColorRGBU, ColorRGBAU, ColorRGBF, ColorRGBAF, colors.`[]`, colors.`[]=`, colors.len, colors.high, colors.`==`
 

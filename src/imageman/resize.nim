@@ -1,4 +1,4 @@
-import images, colors
+import ./images, ./colors
 import math
 
 func resizedNN*[T: Color](img: Image[T], w, h: int): Image[T] =

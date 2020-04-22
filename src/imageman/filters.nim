@@ -1,4 +1,4 @@
-import images, colors, util
+import ./images, ./colors, ./util
 import math
 
 const

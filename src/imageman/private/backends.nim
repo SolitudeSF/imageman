@@ -8,7 +8,6 @@ const
 when not (imagemanLibjpeg or imagemanLibpng or imagemanStb):
   {.warning: "No IO backends activated."}
 
-
 func startsWith[N: static int](data: openArray[char], val: array[N, byte]): bool =
   if data.len > N:
     for i in 0..<N:

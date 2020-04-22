@@ -1,4 +1,4 @@
-import images, colors
+import ./images, ./colors
 import math
 
 template circleRoutine: untyped =

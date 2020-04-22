@@ -1,5 +1,4 @@
-import ../colors
-import imagetype
+import ../colors, ./imagetype
 import stb_image/[read, write]
 
 template toColorMode(t: typedesc[Color]): untyped =

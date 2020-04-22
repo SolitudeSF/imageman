@@ -1,4 +1,4 @@
-import images, colors, filters
+import ./images, ./colors, ./filters
 
 func addError[T: Color](i: var Image[T], x, y: int, factor, r, g, b: float32) {.inline.} =
   if not (x < 0 or y >= i.h or x >= i.w):
