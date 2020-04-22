@@ -1,7 +1,7 @@
 import ./imagetype, ../colors
 
 when defined(windows):
-  const libname = "libpng16.dll"
+  const libname = "libpng16(-16).dll"
 elif defined(macosx):
   const libname = "libpng16(|.16).dylib"
 else:

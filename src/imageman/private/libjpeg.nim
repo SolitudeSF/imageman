@@ -1,9 +1,9 @@
 import ./imagetype, ../colors
 
 when defined(windows):
-  const libname = "libjpeg.dll"
+  const libname = "libjpeg(|-8).dll"
 elif defined(macos):
-  const libname = "libjpeg.dylib"
+  const libname = "libjpeg(|.8).dylib"
 else:
   const libname = "libjpeg.so(|.8)"
 
