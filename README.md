@@ -18,6 +18,22 @@ Manipulate. Images.
 ## Installation
 `nimble install imageman`
 
+## Backends
+### libjpeg(-turbo)
+- Activated with `imagemanLibjpeg` flag. Enabled by default.
+- SIMD accelerated JPEG encoder/decoder.
+- Dynamically linked. Requires dll/so/dylib at runtime.
+
+### libpng
+- Activated with `imagemanLibpng` flag. Enabled by default.
+- Fast PNG encoder/decoder (outperforms `stb_image`).
+- Dynamically linked. Requires dll/so/dylib of itself and zlib at runtime.
+
+### stb_image
+- Activated with `imagemanStb` flag. By default only enabled if libjpeg and libpng are disabled.
+- Supports reading and writing PNG, JPEG, BMP and TGA images but with limited control.
+- Header only - compiled in.
+
 ## Features
 - Easy manipulation of individual pixel components
 - Image reading/writing
