@@ -46,7 +46,11 @@ Manipulate. Images.
     - [x] `ColorRGBAU` - 8bit uint 4 components
     - [x] `ColorRGBF` - 32bit float 3 components
     - [x] `ColorRGBAF` - 32bit float 4 components
+    - [x] `ColorRGBF64` - 64bit float 3 components
+    - [x] `ColorRGBAF64` - 64bit float 4 components
     - [x] `ColorHSL` - 32bit float
+    - [x] `ColorHSLuv` - 64bit float, perceptually uniform, unlike normal HSL
+    - [x] `ColorHPLuv` - 64bit float
 - Filtering
     - [x] General convolutional kernel routine
         - [x] Smoothing
