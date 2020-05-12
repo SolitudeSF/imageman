@@ -26,10 +26,22 @@ type
   ColorRGBAny* = ColorRGBUAny | ColorRGBFAny | ColorRGBF64Any
   ColorA* = ColorRGBAU | ColorRGBAF | ColorRGBAF64
   Color* = ColorRGBAny | ColorHSL | ColorHSLuv | ColorHPLuv
-<<<<<<< HEAD
-=======
 
->>>>>>> 57c4eda... Colors are now objects instead of arrays.
+const
+  hsluvM = [
+    (3.24096994190452134377, -1.53738317757009345794, -0.49861076029300328366),
+    (-0.96924363628087982613, 1.87596750150772066772, 0.04155505740717561247),
+    (0.05563007969699360846, -0.20397695888897656435, 1.05697151424287856072)
+  ]
+  hsluvMInv = [
+    (0.41239079926595948129, 0.35758433938387796373, 0.18048078840183428751),
+    (0.21263900587151035754, 0.71516867876775592746, 0.07219231536073371500),
+    (0.01933081871559185069, 0.11919477979462598791, 0.95053215224966058086)
+  ]
+  refU = 0.19783000664283680764
+  refV = 0.46831999493879100370
+  kappa = 903.29629629629629629630
+  epsilon = 0.00885645167903563082
 
 template componentType*(t: typedesc[Color]): typedesc =
   ## Returns component type of a given color type.
@@ -89,6 +101,8 @@ func toLinear*(c: uint8): float32 =
 func toUint8*(c: float32): uint8 =
   ## Converts 0..1 float32 to 0..255 uint8
   uint8(c * 255)
+
+# func to*[T: Color](c: T, t: typedesc[T]): T = c
 
 func to*[T: ColorRGBU](c: ColorRGBAU, t: typedesc[T]): T =
   copyMem addr result, unsafeAddr c, sizeof ColorRGBU
@@ -155,6 +169,184 @@ func to*[T: ColorHSL](c: ColorRGBF, t: typedesc[T]): T =
   if chroma != 0:
     result.s = chroma / (1 - abs(2 * result.l - 1))
 
+func toXYZ(c: float64): float64 =
+  if c > 0.04045:
+    pow((c + 0.055) / 1.055, 2.4)
+  else:
+    c / 12.92
+
+func dotProduct[T](a, b: (T, T, T)): T =
+  a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+
+func toXYZ(c: ColorRGBF64): tuple[x, y, z: float64] =
+  let t = (c.r.toXYZ, c.g.toXYZ, c.b.toXYZ)
+  result.x = dotProduct(hsluvMInv[0], t)
+  result.y = dotProduct(hsluvMInv[1], t)
+  result.z = dotProduct(hsluvMInv[2], t)
+
+func y2l(y: float64): float64 =
+  if y <= epsilon:
+    y * kappa
+  else:
+    116.0 * cbrt(y) - 16.0
+
+func toLUV(c: tuple[x, y, z: float64]): tuple[l, u, v: float64] =
+  let
+    varU = (4.0 * c.x) / (c.x + (15.0 * c.y) + (3.0 * c.z))
+    varV = (9.0 * c.y) / (c.x + (15.0 * c.y) + (3.0 * c.z))
+
+  result.l = c.y.y2l
+  if result.l >= 0.00000001:
+    result.u = 13.0 * result.l * (varU - refU)
+    result.v = 13.0 * result.l * (varV - refV)
+
+func toLCH(c: tuple[l, u, v: float64]): tuple[l, c, h: float64] =
+  let s = sqrt(c.u * c.u + c.v * c.v)
+  if s >= 0.00000001:
+    result.h = arctan2(c.v, c.u) * 57.29577951308232087680
+    if result.h < 0.0:
+      result.h += 360.0
+  result.l = c.l
+  result.c = s
+
+func getBounds(l: float64): array[6, tuple[a, b: float64]] =
+  let
+    tl = l + 16.0
+    sub1 = (tl * tl * tl) / 1560896.0
+    sub2 = if sub1 > epsilon: sub1 else: l / kappa
+
+  for channel in 0..2:
+    let
+      m1 = hsluvM[channel][0]
+      m2 = hsluvM[channel][1]
+      m3 = hsluvM[channel][2]
+    for t in 0..1:
+      let
+        top1 = (284517.0 * m1 - 94839.0 * m3) * sub2
+        top2 = (838422.0 * m3 + 769860.0 * m2 + 731718.0 * m1) * l * sub2 - 769860.0 * t.float64 * l
+        bottom = (632260.0 * m3 - 126452.0 * m2) * sub2 + 126452.0 * t.float64
+
+      result[channel * 2 + t] = (top1 / bottom, top2 / bottom)
+
+func rayLengthUntilIntersect(theta: float64, line: tuple[a, b: float64]): float64 =
+  line.b / (sin(theta) - line.a * cos(theta))
+
+func maxChromaForLH(l, h: float64): float64 =
+  result = float64.high
+  let
+    hrad = h * 0.01745329251994329577
+    bounds = getBounds(l)
+  for i in 0..5:
+    let len = rayLengthUntilIntersect(hrad, bounds[i])
+    if len >= 0 and len < result:
+      result = len
+
+func toHSLuv(c: tuple[l, c, h: float64]): ColorHSLuv =
+  if c.l <= 99.9999999 and c.l >= 0.00000001:
+    result.s = c.c / maxChromaForLH(c.l, c.h) * 100
+  if c.c >= 0.00000001:
+    result.h = c.h
+  result.l = c.l
+
+func to*[T: ColorHSLuv](c: ColorRGBF64Any, t: typedesc[T]): T =
+  c.toXYZ.toLUV.toLCH.toHSLuv
+
+
+func toLCH(c: ColorHSLuv): tuple[l, c, h: float64] =
+  if c.l <= 99.9999999 and c.l >= 0.00000001:
+    result.c = maxChromaForLH(c.l, c.h) / 100.0 * c.s
+  if c.s >= 0.00000001:
+    result.h = c.h
+  result.l = c.l
+
+func toLUV(c: tuple[l, c, h: float64]): tuple[l, u, v: float64] =
+  let hrad = c.h * 0.01745329251994329577
+  result = (c.l, cos(hrad) * c.c, sin(hrad) * c.c)
+
+func l2y(l: float64): float64 =
+  if l <= 8.0:
+    l / kappa
+  else:
+    let x = (l + 16.0) / 116.0
+    x * x * x
+
+func toXYZ(c: tuple[l, u, v: float64]): tuple[x, y, z: float64] =
+  if c.l > 0.00000001:
+    let
+      varU = c.u / (13.0 * c.l) + refU
+      varV = c.v / (13.0 * c.l) + refV
+    result.y = l2y(c.l)
+    result.x = -(9.0 * result.y * varU) / ((varU - 4.0) * varV - varU * varV);
+    result.z = (9.0 * result.y - (15.0 * varV * result.y) - (varV * result.x)) / (3.0 * varV);
+
+func fromXYZ(c: float64): float64 =
+  if c <= 0.0031308:
+    12.92 * c
+  else:
+    1.055 * pow(c, 1.0 / 2.4) - 0.055
+
+func toRGB(c: tuple[x, y, z: float64]): ColorRGBF64 =
+  result.r = fromXYZ(dotProduct(hsluvM[0], c))
+  result.g = fromXYZ(dotProduct(hsluvM[1], c))
+  result.b = fromXYZ(dotProduct(hsluvM[2], c))
+
+func to*[T: ColorRGBF64Any](c: ColorHSLuv, t: typedesc[T]): T =
+  let r = c.toLCH.toLUV.toXYZ.toRGB
+  when T is ColorA:
+    result.r = r.r
+    result.g = r.g
+    result.b = r.b
+    result.a = 1.0
+  else:
+    return r
+
+func intersect(a, b: tuple[a, b: float64]): float64 =
+  (a.b - b.b) / (b.a - a.a)
+
+func distFromPoleSquared(a, b: float64): float64 =
+  a * a + b * b
+
+func maxSafeChromaForL(l: float64): float64 =
+  result = float64.high
+  let bounds = getBounds(l)
+  for i in 0..5:
+    let
+      m1 = bounds[i].a
+      b1 = bounds[i].b
+      line2 = (-1.0 / m1, 0.0)
+      x = intersect(bounds[i], line2)
+      distance = distFromPoleSquared(x, b1 + x * m1)
+    if distance < result:
+      result = distance
+  result = sqrt result
+
+func toHPLuv(c: tuple[l, c, h: float64]): ColorHPLuv =
+  if c.l <= 99.9999999 and c.l >= 0.00000001:
+    result.p = c.c / maxSafeChromaForL(c.l) * 100.0
+  if c.c >= 0.00000001:
+    result.h = c.h
+  result.l = c.l
+
+func to*[T: ColorHPLuv](c: ColorRGBF64, t: typedesc[T]): T =
+  c.toXYZ.toLUV.toLCH.toHPLuv
+
+func toLCH(c: ColorHPLuv): tuple[l, c, h: float64] =
+  if c.l <= 99.9999999 and c.l >= 0.00000001:
+    result.c = maxSafeChromaForL(c.l) / 100.0 * c.p
+  if c.p >= 0.00000001:
+    result.h = c.h
+  result.l = c.l
+
+func to*[T: ColorRGBF64Any](c: ColorHPLuv, t: typedesc[T]): T =
+  let r = c.toLCH.toLUV.toXYZ.toRGB
+  when T is ColorA:
+    result.r = r.r
+    result.g = r.g
+    result.b = r.b
+    result.a = 1.0
+  else:
+    return r
+
 func blendColorValue*[T: ColorComponent](a, b: T, t: float32): T {.inline.} =
   ## Blends two color with ratio.
   T sqrt((1.0 - t) * a.precise * a.precise + t * b.precise * b.precise)
@@ -167,9 +359,17 @@ func `+`*[T: Color](a, b: T): T =
   when T is ColorA:
     result.a = a.a
 
-func `~=`*[T: ColorRGBF64Any | ColorRGBFAny](a, b: T, e = T.componentType(0.01)): bool =
+func `~=`*[T: ColorRGBF64Any | ColorRGBFAny](a, b: T, e = componentType(T)(1.0e-11)): bool =
   ## Compares colors with given accuracy.
   abs(a.r - b.r) < e and abs(a.g - b.g) < e and abs(a.b - b.b) < e
+
+func `~=`*[T: ColorHSLuv | ColorHSL](a, b: T, e = componentType(T)(1.0e-11)): bool =
+  ## Compares colors with given accuracy.
+  abs(a.h - b.h) < e and abs(a.s - b.s) < e and abs(a.l - b.l) < e
+
+func `~=`*[T: ColorHPLuv](a, b: T, e = componentType(T)(1.0e-11)): bool =
+  ## Compares colors with given accuracy.
+  abs(a.h - b.h) < e and abs(a.p - b.p) < e and abs(a.l - b.l) < e
 
 proc rand(u: uint8): uint8 = uint8 u.int.rand
 func rand(r: var Rand, u: uint8): uint8 = uint8 r.rand(u.int)
