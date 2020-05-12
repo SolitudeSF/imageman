@@ -389,26 +389,14 @@ func to*[T: ColorHSLuv](c: ColorRGBF64Any, t: typedesc[T]): T =
 
 func to*[T: ColorRGBF64Any](c: ColorHSLuv, t: typedesc[T]): T =
   let r = c.toLCH.toLUV.toXYZ.toRGB
-  when T is ColorA:
-    result.r = r.r
-    result.g = r.g
-    result.b = r.b
-    result.a = 1.0
-  else:
-    return r
+  when T is ColorA: r.to(ColorRGBAF64) else: r
 
 func to*[T: ColorHPLuv](c: ColorRGBF64, t: typedesc[T]): T =
   c.toXYZ.toLUV.toLCH.toHPLuv
 
 func to*[T: ColorRGBF64Any](c: ColorHPLuv, t: typedesc[T]): T =
   let r = c.toLCH.toLUV.toXYZ.toRGB
-  when T is ColorA:
-    result.r = r.r
-    result.g = r.g
-    result.b = r.b
-    result.a = 1.0
-  else:
-    return r
+  when T is ColorA: r.to(ColorRGBAF64) else: r
 
 func blendColorValue*[T: ColorComponent](a, b: T, t: float32): T {.inline.} =
   ## Blends two color with ratio.
@@ -425,14 +413,14 @@ func `+`*[T: Color](a, b: T): T =
 func `$`*(c: ColorA): string =
   "(r: " & $c.r & ", g: " & $c.g & ", b: " & $c.b & ", a: " & $c.a & ")"
 
-func `$`*(c: ColorRGBU | ColorRGBF): string =
+func `$`*(c: ColorRGBU | ColorRGBF | ColorRGBF64): string =
   "(r: " & $c.r & ", g: " & $c.g & ", b: " & $c.b & ")"
 
 func `$`*(c: ColorHSL | ColorHSLuv): string =
   "(h: " & $c.h & ", s: " & $c.s & ", l: " & $c.l & ")"
 
 func `$`*(c: ColorHPLuv): string =
-  "(h: " & $c.h & ", s: " & $c.p & ", l: " & $c.l & ")"
+  "(h: " & $c.h & ", p: " & $c.p & ", l: " & $c.l & ")"
 
 func `~=`*[T: Color](a, b: T, e = componentType(T)(1.0e-11)): bool =
   ## Compares colors with given accuracy.
