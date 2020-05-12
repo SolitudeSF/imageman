@@ -91,7 +91,7 @@ genFilter MotionBlur
 genFilter GaussianBlur5
 genFilter UnsharpMasking
 
-func quantize*[T: ColorRGBFAny | ColorRGBF64Any](c: var T, factor: T.componentType) =
+func quantize*[T: ColorRGBFAny | ColorRGBF64Any](c: var T, factor: float) =
   c.r = round(factor * c.r) / factor
   c.g = round(factor * c.g) / factor
   c.b = round(factor * c.b) / factor
@@ -105,7 +105,7 @@ func quantized*[T: ColorRGBAny](c: T, factor: T.componentType): T =
   result = c
   quantize result, factor
 
-func filterGreyscale*[T: Color](image: var Image[T]) =
+func filterGreyscale*[T: ColorRGBAny](image: var Image[T]) =
   for pixel in image.data.mitems:
     let c = (T.componentType) (pixel.r.precise * 0.2126 +
       pixel.g.precise * 0.7152 + pixel.b.precise * 0.0722)
@@ -113,18 +113,18 @@ func filterGreyscale*[T: Color](image: var Image[T]) =
     pixel.g = c
     pixel.b = c
 
-func filterNegative*[T: Color](image: var Image[T]) =
+func filterNegative*[T: ColorRGBAny](image: var Image[T]) =
   for pixel in image.data.mitems:
     pixel.r = T.maxComponentValue - pixel.r
     pixel.g = T.maxComponentValue - pixel.g
     pixel.b = T.maxComponentValue - pixel.b
 
-func filterSepia*[T: Color](image: var Image[T]) =
+func filterSepia*[T: ColorRGBAny](image: var Image[T]) =
   for pixel in image.data.mitems:
     let prev = pixel
-    pixel.r = (T.componentType) min(prev.r.precise * 0.393 + prev.g.precise * 0.769 + prev.b.precise * 0.189, T.maxComponentValue.precise)
-    pixel.g = (T.componentType) min(prev.r.precise * 0.349 + prev.g.precise * 0.686 + prev.b.precise * 0.168, T.maxComponentValue.precise)
-    pixel.b = (T.componentType) min(prev.r.precise * 0.272 + prev.g.precise * 0.534 + prev.b.precise * 0.131, T.maxComponentValue.precise)
+    pixel.r = componentType(T) min(prev.r.precise * 0.393 + prev.g.precise * 0.769 + prev.b.precise * 0.189, T.maxComponentValue.precise)
+    pixel.g = componentType(T) min(prev.r.precise * 0.349 + prev.g.precise * 0.686 + prev.b.precise * 0.168, T.maxComponentValue.precise)
+    pixel.b = componentType(T) min(prev.r.precise * 0.272 + prev.g.precise * 0.534 + prev.b.precise * 0.131, T.maxComponentValue.precise)
 
 filterGreyscale.genNonMutating filteredGreyscale
 filterNegative.genNonMutating filteredNegative
