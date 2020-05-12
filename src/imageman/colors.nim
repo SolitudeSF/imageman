@@ -1,16 +1,21 @@
 import math, random, typetraits
 
 type
-  ColorComponent* = uint8 | float32
+  ColorComponent* = uint8 | float32 | float64
   ColorRGBU* = distinct array[3, uint8]
   ColorRGBAU* = distinct array[4, uint8]
   ColorRGBF* = distinct array[3, float32]
   ColorRGBAF* = distinct array[4, float32]
+  ColorRGBF64* = distinct array[3, float64]
+  ColorRGBAF64* = distinct array[4, float64]
   ColorHSL* = distinct array[3, float32]
+  ColorHSLuv* = distinct array[3, float64]
+  ColorHPLuv* = distinct array[3, float64]
   ColorRGBUAny* = ColorRGBU | ColorRGBAU
   ColorRGBFAny* = ColorRGBF | ColorRGBAF
-  ColorRGBAny* = ColorRGBUAny | ColorRGBFAny
-  ColorA* = ColorRGBAU | ColorRGBAF
+  ColorRGBF64Any* = ColorRGBF64 | ColorRGBAF64
+  ColorRGBAny* = ColorRGBUAny | ColorRGBFAny | ColorRGBF64Any
+  ColorA* = ColorRGBAU | ColorRGBAF | ColorRGBAF64
   Color* = ColorRGBAny | ColorHSL
 
 template `[]`*[T: Color](c: T, n: Ordinal): auto = distinctBase(c)[n]
@@ -35,11 +40,21 @@ template l*(c: ColorHSL): float32 = c[2]
 template `h=`*(c: var ColorHSL, i: float32) = c[0] = i
 template `s=`*(c: var ColorHSL, i: float32) = c[1] = i
 template `l=`*(c: var ColorHSL, i: float32) = c[2] = i
+template h*(c: ColorHSL | ColorHSLuv | ColorHPLuv): float64 = c[0]
+template s*(c: ColorHSL | ColorHSLuv): float64 = c[1]
+template p*(c: ColorHPLuv): float64 = c[1]
+template l*(c: ColorHSL | ColorHSLuv | ColorHPLuv): float64 = c[2]
+template `h=`*(c: var (ColorHSL | ColorHSLuv | ColorHPLuv), i: float64) = c[0] = i
+template `s=`*(c: var (ColorHSL | ColorHSLuv), i: float64) = c[1] = i
+template `p=`*(c: var ColorHPLuv, i: float64) = c[1] = i
+template `l=`*(c: var (ColorHSL | ColorHSLuv | ColorHPLuv), i: float64) = c[2] = i
 
 template componentType*(t: typedesc[Color]): typedesc =
   ## Returns component type of a given color type.
   when t is ColorRGBFAny:
     float32
+  elif t is ColorRGBF64Any:
+    float64
   else:
     uint8
 
@@ -47,13 +62,22 @@ template maxComponentValue*(t: typedesc[Color]): untyped =
   ## Returns maximum component value of a give color type.
   when t is ColorRGBFAny:
     1.0'f32
+  elif t is ColorRGBF64Any:
+    1.0'f64
   else:
     255'u8
 
-template precise*[T: ColorComponent](t: T): float32 =
+template precise*[T: ColorComponent](t: T): untyped =
   ## Converts component to float32 if it isn't.
   when T is uint8:
     t.float32
+  else:
+    t
+
+template precise*[T: ColorComponent](t: typedesc[T]): typedesc =
+  ## Converts component to float32 if it isn't.
+  when T is uint8:
+    float32
   else:
     t
 
