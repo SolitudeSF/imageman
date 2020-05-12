@@ -1,25 +1,16 @@
-import math, random
+import math, random, typetraits
 
 type
   ColorComponent* = uint8 | float32 | float64
-  ColorRGBU* = object
-    r*, g*, b*: uint8
-  ColorRGBAU* = object
-    r*, g*, b*, a*: uint8
-  ColorRGBF* = object
-    r*, g*, b*: float32
-  ColorRGBAF* = object
-    r*, g*, b*, a*: float32
-  ColorRGBF64* = object
-    r*, g*, b*: float64
-  ColorRGBAF64* = object
-    r*, g*, b*, a*: float64
-  ColorHSL* = object
-    h*, s*, l*: float32
-  ColorHSLuv* = object
-    h*, s*, l*: float64
-  ColorHPLuv* = object
-    h*, p*, l*: float64
+  ColorRGBU* = distinct array[3, uint8]
+  ColorRGBAU* = distinct array[4, uint8]
+  ColorRGBF* = distinct array[3, float32]
+  ColorRGBAF* = distinct array[4, float32]
+  ColorRGBF64* = distinct array[3, float64]
+  ColorRGBAF64* = distinct array[4, float64]
+  ColorHSL* = distinct array[3, float32]
+  ColorHSLuv* = distinct array[3, float64]
+  ColorHPLuv* = distinct array[3, float64]
   ColorRGBUAny* = ColorRGBU | ColorRGBAU
   ColorRGBFAny* = ColorRGBF | ColorRGBAF
   ColorRGBF64Any* = ColorRGBF64 | ColorRGBAF64
@@ -42,6 +33,37 @@ const
   refV = 0.46831999493879100370
   kappa = 903.29629629629629629630
   epsilon = 0.00885645167903563082
+
+template `[]`*[T: Color](c: T, n: Ordinal): auto = distinctBase(c)[n]
+template `[]=`*[T: Color](c: var T, n: Natural, v) = distinctBase(c)[n] = v
+template len*(c: typedesc[Color]): int = distinctBase(c).len
+template len*(c: Color): int = distinctBase(c).len
+template high*(c: typedesc[Color]): int = distinctBase(c).high
+template high*(c: Color): int = distinctBase(c).high
+template `==`*[T: Color](x, y: T): bool = distinctBase(x) == distinctBase(y)
+
+template r*(c: ColorRGBAny): untyped = c[0]
+template g*(c: ColorRGBAny): untyped = c[1]
+template b*(c: ColorRGBAny): untyped = c[2]
+template a*(c: ColorA): untyped = c[3]
+template `r=`*(c: var ColorRGBAny, i: untyped) = c[0] = i
+template `g=`*(c: var ColorRGBAny, i: untyped) = c[1] = i
+template `b=`*(c: var ColorRGBAny, i: untyped) = c[2] = i
+template `a=`*(c: var ColorA, i: untyped) = c[3] = i
+template h*(c: ColorHSL): float32 = c[0]
+template s*(c: ColorHSL): float32 = c[1]
+template l*(c: ColorHSL): float32 = c[2]
+template `h=`*(c: var ColorHSL, i: float32) = c[0] = i
+template `s=`*(c: var ColorHSL, i: float32) = c[1] = i
+template `l=`*(c: var ColorHSL, i: float32) = c[2] = i
+template h*(c: ColorHSLuv | ColorHPLuv): float64 = c[0]
+template s*(c: ColorHSLuv): float64 = c[1]
+template p*(c: ColorHPLuv): float64 = c[1]
+template l*(c: ColorHSLuv | ColorHPLuv): float64 = c[2]
+template `h=`*(c: var (ColorHSLuv | ColorHPLuv), i: float64) = c[0] = i
+template `s=`*(c: var ColorHSLuv, i: float64) = c[1] = i
+template `p=`*(c: var ColorHPLuv, i: float64) = c[1] = i
+template `l=`*(c: var (ColorHSLuv | ColorHPLuv), i: float64) = c[2] = i
 
 template componentType*(t: typedesc[Color]): typedesc =
   ## Returns component type of a given color type.
@@ -119,22 +141,22 @@ func to*[T: ColorRGBAF](c: ColorRGBF, t: typedesc[T]): T =
   result.a = 1.0
 
 func to*[T: ColorRGBF](c: ColorRGBAny, t: typedesc[T]): T =
-  ColorRGBF(r: c.r.toLinear, g:c.g.toLinear, b: c.b.toLinear)
+  ColorRGBF [c.r.toLinear, c.g.toLinear, c.b.toLinear]
 
 func to*[T: ColorRGBU](c: ColorRGBFAny, t: typedesc[T]): T =
-  ColorRGBU(r: c.r.toUint8, g: c.g.toUint8, b: c.b.toUint8)
+  ColorRGBU [c.r.toUint8, c.g.toUint8, c.b.toUint8]
 
 func to*[T: ColorRGBAF](c: ColorRGBAU, t: typedesc[T]): T =
-  ColorRGBAF(r: c.r.toLinear, g: c.g.toLinear, b: c.b.toLinear, a: c.a.toLinear)
+  ColorRGBAF [c.r.toLinear, c.g.toLinear, c.b.toLinear, c.a.toLinear]
 
 func to*[T: ColorRGBAF](c: ColorRGBU, t: typedesc[T]): T =
-  ColorRGBAF(r: c.r.toLinear, g: c.g.toLinear, b: c.b.toLinear, a: 1.0)
+  ColorRGBAF [c.r.toLinear, c.g.toLinear, c.b.toLinear, 1.0]
 
 func to*[T: ColorRGBAU](c: ColorRGBF, t: typedesc[T]): T =
-  ColorRGBAU(r: c.r.toUint8, g: c.g.toUint8, b: c.b.toUint8, a: 255)
+  ColorRGBAU [c.r.toUint8, c.g.toUint8, c.b.toUint8, 255]
 
 func to*[T: ColorRGBAU](c: ColorRGBAF, t: typedesc[T]): T =
-  ColorRGBAU(r: c.r.toUint8, g: c.g.toUint8, b: c.b.toUint8, a: c.a.toUint8)
+  ColorRGBAU [c.r.toUint8, c.g.toUint8, c.b.toUint8, c.a.toUint8]
 
 func to*[T: ColorRGBF](c: ColorHSL, t: typedesc[T]): T =
   let a = c.s * min(c.l, 1 - c.l)
@@ -359,17 +381,21 @@ func `+`*[T: Color](a, b: T): T =
   when T is ColorA:
     result.a = a.a
 
-func `~=`*[T: ColorRGBF64Any | ColorRGBFAny](a, b: T, e = componentType(T)(1.0e-11)): bool =
-  ## Compares colors with given accuracy.
-  abs(a.r - b.r) < e and abs(a.g - b.g) < e and abs(a.b - b.b) < e
+func `$`*(c: ColorA): string =
+  "(r: " & $c.r & ", g: " & $c.g & ", b: " & $c.b & ", a: " & $c.a & ")"
 
-func `~=`*[T: ColorHSLuv | ColorHSL](a, b: T, e = componentType(T)(1.0e-11)): bool =
-  ## Compares colors with given accuracy.
-  abs(a.h - b.h) < e and abs(a.s - b.s) < e and abs(a.l - b.l) < e
+func `$`*(c: ColorRGBU | ColorRGBF): string =
+  "(r: " & $c.r & ", g: " & $c.g & ", b: " & $c.b & ")"
 
-func `~=`*[T: ColorHPLuv](a, b: T, e = componentType(T)(1.0e-11)): bool =
+func `$`*(c: ColorHSL | ColorHSLuv): string =
+  "(h: " & $c.h & ", s: " & $c.s & ", l: " & $c.l & ")"
+
+func `$`*(c: ColorHPLuv): string =
+  "(h: " & $c.h & ", s: " & $c.p & ", l: " & $c.l & ")"
+
+func `~=`*[T: Color](a, b: T, e = componentType(T)(1.0e-11)): bool =
   ## Compares colors with given accuracy.
-  abs(a.h - b.h) < e and abs(a.p - b.p) < e and abs(a.l - b.l) < e
+  abs(a[0] - b[0]) < e and abs(a[1] - b[1]) < e and abs(a[2] - b[2]) < e
 
 proc rand(u: uint8): uint8 = uint8 u.int.rand
 func rand(r: var Rand, u: uint8): uint8 = uint8 r.rand(u.int)
@@ -388,10 +414,10 @@ func isGreyscale*(c: ColorRGBAny): bool =
   ## Checks if color is grayscale (all color components are equal).
   c.r == c.g and c.r == c.b
 
-func interpolate*[T: ColorRGBAny](a, b: T, x: float32, L = 1.0): T =
+func interpolate*[T: Color](a, b: T, x: float32, L = 1.0): T =
   ## Returns linearly interpolated color value.
-  result.r = (T.componentType) (a.r.precise + x * (b.r.precise - a.r.precise) / L)
-  result.g = (T.componentType) (a.g.precise + x * (b.g.precise - a.g.precise) / L)
-  result.b = (T.componentType) (a.b.precise + x * (b.b.precise - a.b.precise) / L)
+  result[0] = (T.componentType) (a[0].precise + x * (b[0].precise - a[0].precise) / L)
+  result[1] = (T.componentType) (a[1].precise + x * (b[1].precise - a[1].precise) / L)
+  result[2] = (T.componentType) (a[2].precise + x * (b[2].precise - a[2].precise) / L)
   when T is ColorA:
     result.a = (T.componentType) (a.a.precise + x * (b.a.precise - a.a.precise) / L)
