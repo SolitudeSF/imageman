@@ -116,15 +116,32 @@ template precise*[T: ColorComponent](t: typedesc[T]): typedesc =
   else:
     t
 
-func toLinear*(c: uint8): float32 =
+func toFloat32*(c: uint8): float32 =
   ## Converts 0..255 uint8 to 0..1 float32
   c.float32 / 255
 
-func toUint8*(c: float32): uint8 =
-  ## Converts 0..1 float32 to 0..255 uint8
+func toFloat64*(c: uint8): float64 =
+  ## Converts 0..255 uint8 to 0..1 float32
+  c.float64 / 255
+
+func toUint8*(c: float32 | float64): uint8 =
+  ## Converts 0..1 float to 0..255 uint8
   uint8(c * 255)
 
-# func to*[T: Color](c: T, t: typedesc[T]): T = c
+#[
+to/from|RGBU|RGBAU|RGBF|RGBAF|RGBF64|RGBAF64|HSL|HSLuv|HPLuv|
+RGBU   |*   |+    |+   |+    |+     |+      |   |     |     |
+RGBAU  |+   |*    |+   |+    |+     |+      |   |     |     |
+RGBF   |+   |+    |*   |+    |+     |+      |+  |     |     |
+RGBAF  |+   |+    |+   |*    |+     |+      |   |     |     |
+RGBF64 |    |     |+   |+    |*     |+      |   |+    |+    |
+RGBAF64|    |     |+   |+    |+     |*      |   |+    |+    |
+HSL    |    |     |+   |     |      |       |*  |     |     |
+HSLuv  |    |     |    |     |+     |+      |   |*    |     |
+HPLuv  |    |     |    |     |+     |+      |   |     |*    |
+]#
+
+func to*[T: Color](c: T, t: typedesc[T]): T = c
 
 func to*[T: ColorRGBU](c: ColorRGBAU, t: typedesc[T]): T =
   copyMem addr result, unsafeAddr c, sizeof ColorRGBU
@@ -140,23 +157,26 @@ func to*[T: ColorRGBAF](c: ColorRGBF, t: typedesc[T]): T =
   copyMem addr result, unsafeAddr c, sizeof ColorRGBF
   result.a = 1.0
 
-func to*[T: ColorRGBF](c: ColorRGBAny, t: typedesc[T]): T =
-  ColorRGBF [c.r.toLinear, c.g.toLinear, c.b.toLinear]
+func to*[T: ColorRGBUAny](c: ColorRGBFAny | ColorRGBF64Any, t: typedesc[T]): T =
+  result.r = c.r.toUint8
+  result.g = c.g.toUint8
+  result.b = c.b.toUint8
+  when T is ColorA:
+    result.a = when c is ColorA: c.a.toUint8 else: 255
 
-func to*[T: ColorRGBU](c: ColorRGBFAny, t: typedesc[T]): T =
-  ColorRGBU [c.r.toUint8, c.g.toUint8, c.b.toUint8]
+func to*[T: ColorRGBFAny](c: ColorRGBUAny, t: typedesc[T]): T =
+  result.r = c.r.toFloat32
+  result.g = c.g.toFloat32
+  result.b = c.b.toFloat32
+  when T is ColorA:
+    result.a = when c is ColorA: c.a.toFloat32 else: 1.0
 
-func to*[T: ColorRGBAF](c: ColorRGBAU, t: typedesc[T]): T =
-  ColorRGBAF [c.r.toLinear, c.g.toLinear, c.b.toLinear, c.a.toLinear]
-
-func to*[T: ColorRGBAF](c: ColorRGBU, t: typedesc[T]): T =
-  ColorRGBAF [c.r.toLinear, c.g.toLinear, c.b.toLinear, 1.0]
-
-func to*[T: ColorRGBAU](c: ColorRGBF, t: typedesc[T]): T =
-  ColorRGBAU [c.r.toUint8, c.g.toUint8, c.b.toUint8, 255]
-
-func to*[T: ColorRGBAU](c: ColorRGBAF, t: typedesc[T]): T =
-  ColorRGBAU [c.r.toUint8, c.g.toUint8, c.b.toUint8, c.a.toUint8]
+func to*[T: ColorRGBF64Any](c: ColorRGBUAny, t: typedesc[T]): T =
+  result.r = c.r.toFloat64
+  result.g = c.g.toFloat64
+  result.b = c.b.toFloat64
+  when T is ColorA:
+    result.a = when c is ColorA: c.a.toFloat64 else: 1.0
 
 func to*[T: ColorRGBF](c: ColorHSL, t: typedesc[T]): T =
   let a = c.s * min(c.l, 1 - c.l)
@@ -190,6 +210,27 @@ func to*[T: ColorHSL](c: ColorRGBF, t: typedesc[T]): T =
 
   if chroma != 0:
     result.s = chroma / (1 - abs(2 * result.l - 1))
+
+func to*[T: ColorRGBFAny](c: ColorRGBF64Any, t: typedesc[T]): T =
+  result.r = c.r.float32
+  result.g = c.g.float32
+  result.b = c.b.float32
+  when T is ColorA:
+    result.a = when c is ColorA: c.a.float32 else: 1.0
+
+func to*[T: ColorRGBF64Any](c: ColorRGBFAny, t: typedesc[T]): T =
+  result.r = c.r.float64
+  result.g = c.g.float64
+  result.b = c.b.float64
+  when T is ColorA:
+    result.a = when c is ColorA: c.a.float64 else: 1.0
+
+func to*[T: ColorRGBAF64](c: ColorRGBF64, t: typedesc[T]): T =
+  copyMem addr result, unsafeAddr c, sizeof c
+  result.a = 1.0
+
+func to*[T: ColorRGBF64](c: ColorRGBAF64, t: typedesc[T]): T =
+  copyMem addr result, unsafeAddr c, sizeof T
 
 func toXYZ(c: float64): float64 =
   if c > 0.04045:
