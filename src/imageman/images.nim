@@ -1,6 +1,8 @@
 import ./colors, ./util, ./private/[backends, imagetype]
 export backends, imagetype
-export ColorRGBU, ColorRGBAU, ColorRGBF, ColorRGBAF, colors.`[]`, colors.`[]=`, colors.len, colors.high, colors.`==`
+export ColorRGBU, ColorRGBAU, ColorRGBF, ColorRGBAF, ColorRGBF64, ColorRGBAF64,
+  ColorHSL, ColorHSLuv, ColorHPLuv, ColorRGBUAny, ColorRGBFAny, ColorRGBF64Any,
+  ColorRGBAny, ColorA, Color
 
 type
   Point* = tuple[x, y: int]

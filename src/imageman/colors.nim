@@ -1,68 +1,69 @@
-import math, random, typetraits
+import math, random
 
 type
   ColorComponent* = uint8 | float32 | float64
-  ColorRGBU* = distinct array[3, uint8]
-  ColorRGBAU* = distinct array[4, uint8]
-  ColorRGBF* = distinct array[3, float32]
-  ColorRGBAF* = distinct array[4, float32]
-  ColorRGBF64* = distinct array[3, float64]
-  ColorRGBAF64* = distinct array[4, float64]
-  ColorHSL* = distinct array[3, float32]
-  ColorHSLuv* = distinct array[3, float64]
-  ColorHPLuv* = distinct array[3, float64]
+  ColorRGBU* = object
+    r*, g*, b*: uint8
+  ColorRGBAU* = object
+    r*, g*, b*, a*: uint8
+  ColorRGBF* = object
+    r*, g*, b*: float32
+  ColorRGBAF* = object
+    r*, g*, b*, a*: float32
+  ColorRGBF64* = object
+    r*, g*, b*: float64
+  ColorRGBAF64* = object
+    r*, g*, b*, a*: float64
+  ColorHSL* = object
+    h*, s*, l*: float32
+  ColorHSLuv* = object
+    h*, s*, l*: float64
+  ColorHPLuv* = object
+    h*, p*, l*: float64
   ColorRGBUAny* = ColorRGBU | ColorRGBAU
   ColorRGBFAny* = ColorRGBF | ColorRGBAF
   ColorRGBF64Any* = ColorRGBF64 | ColorRGBAF64
   ColorRGBAny* = ColorRGBUAny | ColorRGBFAny | ColorRGBF64Any
   ColorA* = ColorRGBAU | ColorRGBAF | ColorRGBAF64
-  Color* = ColorRGBAny | ColorHSL
+  Color* = ColorRGBAny | ColorHSL | ColorHSLuv | ColorHPLuv
+<<<<<<< HEAD
+=======
 
-template `[]`*[T: Color](c: T, n: Ordinal): auto = distinctBase(c)[n]
-template `[]=`*[T: Color](c: var T, n: Natural, v) = distinctBase(c)[n] = v
-template len*(c: typedesc[Color]): int = distinctBase(c).len
-template len*(c: Color): int = distinctBase(c).len
-template high*(c: typedesc[Color]): int = distinctBase(c).high
-template high*(c: Color): int = distinctBase(c).high
-template `==`*[T: Color](x, y: T): bool = distinctBase(x) == distinctBase(y)
-
-template r*(c: ColorRGBAny): untyped = c[0]
-template g*(c: ColorRGBAny): untyped = c[1]
-template b*(c: ColorRGBAny): untyped = c[2]
-template a*(c: ColorA): untyped = c[3]
-template `r=`*(c: var ColorRGBAny, i: untyped) = c[0] = i
-template `g=`*(c: var ColorRGBAny, i: untyped) = c[1] = i
-template `b=`*(c: var ColorRGBAny, i: untyped) = c[2] = i
-template `a=`*(c: var ColorA, i: untyped) = c[3] = i
-template h*(c: ColorHSL): float32 = c[0]
-template s*(c: ColorHSL): float32 = c[1]
-template l*(c: ColorHSL): float32 = c[2]
-template `h=`*(c: var ColorHSL, i: float32) = c[0] = i
-template `s=`*(c: var ColorHSL, i: float32) = c[1] = i
-template `l=`*(c: var ColorHSL, i: float32) = c[2] = i
-template h*(c: ColorHSL | ColorHSLuv | ColorHPLuv): float64 = c[0]
-template s*(c: ColorHSL | ColorHSLuv): float64 = c[1]
-template p*(c: ColorHPLuv): float64 = c[1]
-template l*(c: ColorHSL | ColorHSLuv | ColorHPLuv): float64 = c[2]
-template `h=`*(c: var (ColorHSL | ColorHSLuv | ColorHPLuv), i: float64) = c[0] = i
-template `s=`*(c: var (ColorHSL | ColorHSLuv), i: float64) = c[1] = i
-template `p=`*(c: var ColorHPLuv, i: float64) = c[1] = i
-template `l=`*(c: var (ColorHSL | ColorHSLuv | ColorHPLuv), i: float64) = c[2] = i
+>>>>>>> 57c4eda... Colors are now objects instead of arrays.
 
 template componentType*(t: typedesc[Color]): typedesc =
   ## Returns component type of a given color type.
-  when t is ColorRGBFAny:
+  when t is ColorRGBFAny | ColorHSL:
     float32
-  elif t is ColorRGBF64Any:
+  elif t is ColorRGBF64Any | ColorHSLuv | ColorHPLuv:
     float64
   else:
     uint8
 
+template iteratorImpl[T: Color](c: T): untyped =
+  when T is ColorRGBAny:
+    yield c.r
+    yield c.g
+    yield c.b
+  elif T is (ColorHSL | ColorHSLuv):
+    yield c.h
+    yield c.s
+    yield c.l
+  elif T is ColorHPLuv:
+    yield c.h
+    yield c.p
+    yield c.l
+  when T is ColorA:
+    yield c.a
+
+iterator items*[T: Color](c: T): T.componentType = iteratorImpl[T](c)
+iterator mitems*[T: Color](c: var T): var T.componentType = iteratorImpl[T](c)
+
 template maxComponentValue*(t: typedesc[Color]): untyped =
   ## Returns maximum component value of a give color type.
-  when t is ColorRGBFAny:
+  when t is ColorRGBFAny | ColorHSL:
     1.0'f32
-  elif t is ColorRGBF64Any:
+  elif t is ColorRGBF64Any | ColorHSLuv | ColorHPLuv:
     1.0'f64
   else:
     255'u8
@@ -104,22 +105,22 @@ func to*[T: ColorRGBAF](c: ColorRGBF, t: typedesc[T]): T =
   result.a = 1.0
 
 func to*[T: ColorRGBF](c: ColorRGBAny, t: typedesc[T]): T =
-  ColorRGBF [c.r.toLinear, c.g.toLinear, c.b.toLinear]
+  ColorRGBF(r: c.r.toLinear, g:c.g.toLinear, b: c.b.toLinear)
 
 func to*[T: ColorRGBU](c: ColorRGBFAny, t: typedesc[T]): T =
-  ColorRGBU [c.r.toUint8, c.g.toUint8, c.b.toUint8]
+  ColorRGBU(r: c.r.toUint8, g: c.g.toUint8, b: c.b.toUint8)
 
 func to*[T: ColorRGBAF](c: ColorRGBAU, t: typedesc[T]): T =
-  ColorRGBAF [c.r.toLinear, c.g.toLinear, c.b.toLinear, c.a.toLinear]
+  ColorRGBAF(r: c.r.toLinear, g: c.g.toLinear, b: c.b.toLinear, a: c.a.toLinear)
 
 func to*[T: ColorRGBAF](c: ColorRGBU, t: typedesc[T]): T =
-  ColorRGBAF [c.r.toLinear, c.g.toLinear, c.b.toLinear, 1.0]
+  ColorRGBAF(r: c.r.toLinear, g: c.g.toLinear, b: c.b.toLinear, a: 1.0)
 
 func to*[T: ColorRGBAU](c: ColorRGBF, t: typedesc[T]): T =
-  ColorRGBAU [c.r.toUint8, c.g.toUint8, c.b.toUint8, 255]
+  ColorRGBAU(r: c.r.toUint8, g: c.g.toUint8, b: c.b.toUint8, a: 255)
 
 func to*[T: ColorRGBAU](c: ColorRGBAF, t: typedesc[T]): T =
-  ColorRGBAU [c.r.toUint8, c.g.toUint8, c.b.toUint8, c.a.toUint8]
+  ColorRGBAU(r: c.r.toUint8, g: c.g.toUint8, b: c.b.toUint8, a: c.a.toUint8)
 
 func to*[T: ColorRGBF](c: ColorHSL, t: typedesc[T]): T =
   let a = c.s * min(c.l, 1 - c.l)
@@ -166,48 +167,28 @@ func `+`*[T: Color](a, b: T): T =
   when T is ColorA:
     result.a = a.a
 
-func `$`*(c: ColorA): string =
-  "(r: " & $c.r & ", g: " & $c.g & ", b: " & $c.b & ", a: " & $c.a & ")"
-
-func `$`*(c: ColorRGBU | ColorRGBF): string =
-  "(r: " & $c.r & ", g: " & $c.g & ", b: " & $c.b & ")"
-
-func `$`*(c: ColorHSL): string =
-  "(h: " & $c.h & ", s: " & $c.s & ", l: " & $c.l & ")"
-
-func `~=`*(a, b: ColorRGBAF, e = 0.01'f32): bool =
+func `~=`*[T: ColorRGBF64Any | ColorRGBFAny](a, b: T, e = T.componentType(0.01)): bool =
   ## Compares colors with given accuracy.
   abs(a.r - b.r) < e and abs(a.g - b.g) < e and abs(a.b - b.b) < e
 
+proc rand(u: uint8): uint8 = uint8 u.int.rand
+func rand(r: var Rand, u: uint8): uint8 = uint8 r.rand(u.int)
+
 proc rand*[T: Color]: T =
   ## Returns random color.
-  T (when T is ColorRGBU:
-    [uint8 rand(255), uint8 rand(255), uint8 rand(255)]
-  elif T is ColorRGBAU:
-    [uint8 rand(255), uint8 rand(255), uint8 rand(255), uint rand(255)]
-  elif T is ColorRGBF:
-    [rand(1.0), rand(1.0), rand(1.0)]
-  elif T is ColorRGBAF:
-    [rand(1.0), rand(1.0), rand(1.0), uint rand(1.0)]
-  )
+  for c in result.mitems:
+    c = typeof(c) rand(T.maxComponentValue)
 
 func rand*[T: Color](r: var Rand): T =
   ## Returns random color.
-  T (when T is ColorRGBU:
-    [uint8 r.rand(255), uint8 r.rand(255), uint8 r.rand(255)]
-  elif T is ColorRGBAU:
-    [uint8 r.rand(255), uint8 r.rand(255), uint8 r.rand(255), uint r.rand(255)]
-  elif T is ColorRGBF:
-    [r.rand(1.0), r.rand(1.0), r.rand(1.0)]
-  elif T is ColorRGBAF:
-    [r.rand(1.0), r.rand(1.0), r.rand(1.0), r.rand(1.0)]
-  )
+  for c in result.mitems:
+    c = typeof(c) r.rand(T.maxComponentValue)
 
-func isGreyscale*(c: Color): bool =
+func isGreyscale*(c: ColorRGBAny): bool =
   ## Checks if color is grayscale (all color components are equal).
   c.r == c.g and c.r == c.b
 
-func interpolate*[T: Color](a, b: T, x: float32, L = 1.0): T =
+func interpolate*[T: ColorRGBAny](a, b: T, x: float32, L = 1.0): T =
   ## Returns linearly interpolated color value.
   result.r = (T.componentType) (a.r.precise + x * (b.r.precise - a.r.precise) / L)
   result.g = (T.componentType) (a.g.precise + x * (b.g.precise - a.g.precise) / L)

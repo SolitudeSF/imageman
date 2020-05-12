@@ -89,16 +89,16 @@ func stuckiDist*(i: var Image, x, y: int, r, g, b: float32) =
   i.addError(x + 1, y + 2, 2/42.0, r, g, b)
   i.addError(x + 2, y + 2, 1/42.0, r, g, b)
 
-template dither*(i: var Image, dist) =
+template dither*[T: ColorRGBAny](i: var Image[T], dist) =
   for y in 0..<i.h:
     let yw = y * i.w
     for x in 0..<i.w:
       let idx = x + yw
       let prev = i[idx]
       i[idx].quantize 1
-      i.dist(x, y, prev[0].precise - i[idx][0].precise,
-                   prev[1].precise - i[idx][1].precise,
-                   prev[2].precise - i[idx][2].precise)
+      i.dist(x, y, prev.r.precise - i[idx].r.precise,
+                   prev.g.precise - i[idx].g.precise,
+                   prev.b.precise - i[idx].b.precise)
 
 template dithered*(i: Image, dist): Image =
   var r = i
