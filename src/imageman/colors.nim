@@ -204,14 +204,14 @@ func maxChromaForLH(l, h: float64): float64 =
       result = len
 
 func toHSLuv(c: tuple[l, c, h: float64]): ColorHSLuv =
-  if c.l <= uperr and c.l >= err:
+  if c.l in err..uperr:
     result.s = c.c / maxChromaForLH(c.l, c.h) * 100
   if c.c >= err:
     result.h = c.h
   result.l = c.l
 
 func toLCH(c: ColorHSLuv): tuple[l, c, h: float64] =
-  if c.l <= uperr and c.l >= err:
+  if c.l in err..uperr:
     result.c = maxChromaForLH(c.l, c.h) / 100.0 * c.s
   if c.s >= err:
     result.h = c.h
@@ -269,14 +269,14 @@ func maxSafeChromaForL(l: float64): float64 =
   result = sqrt result
 
 func toHPLuv(c: tuple[l, c, h: float64]): ColorHPLuv =
-  if c.l <= uperr and c.l >= err:
+  if c.l in err..uperr:
     result.p = c.c / maxSafeChromaForL(c.l) * 100.0
   if c.c >= err:
     result.h = c.h
   result.l = c.l
 
 func toLCH(c: ColorHPLuv): tuple[l, c, h: float64] =
-  if c.l <= uperr and c.l >= err:
+  if c.l in err..uperr:
     result.c = maxSafeChromaForL(c.l) / 100.0 * c.p
   if c.p >= err:
     result.h = c.h
