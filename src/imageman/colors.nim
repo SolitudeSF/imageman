@@ -33,6 +33,8 @@ const
   refV = 0.46831999493879100370
   kappa = 903.29629629629629629630
   epsilon = 0.00885645167903563082
+  err = 0.00000001
+  uperr = 100 - err
 
 template `[]`*[T: Color](c: T, n: Ordinal): auto = distinctBase(c)[n]
 template `[]=`*[T: Color](c: var T, n: Natural, v) = distinctBase(c)[n] = v
@@ -93,11 +95,11 @@ template iteratorImpl[T: Color](c: T): untyped =
 iterator items*[T: Color](c: T): T.componentType = iteratorImpl[T](c)
 iterator mitems*[T: Color](c: var T): var T.componentType = iteratorImpl[T](c)
 
-template maxComponentValue*(t: typedesc[Color]): untyped =
+template maxComponentValue*(t: typedesc[ColorRGBAny]): untyped =
   ## Returns maximum component value of a give color type.
-  when t is ColorRGBFAny | ColorHSL:
+  when t is ColorRGBFAny:
     1.0'f32
-  elif t is ColorRGBF64Any | ColorHSLuv | ColorHPLuv:
+  elif t is ColorRGBF64Any:
     1.0'f64
   else:
     255'u8
@@ -156,13 +158,13 @@ func toLUV(c: tuple[x, y, z: float64]): tuple[l, u, v: float64] =
     varV = (9.0 * c.y) / (c.x + (15.0 * c.y) + (3.0 * c.z))
 
   result.l = c.y.y2l
-  if result.l >= 0.00000001:
+  if result.l >= err:
     result.u = 13.0 * result.l * (varU - refU)
     result.v = 13.0 * result.l * (varV - refV)
 
 func toLCH(c: tuple[l, u, v: float64]): tuple[l, c, h: float64] =
   let s = sqrt(c.u * c.u + c.v * c.v)
-  if s >= 0.00000001:
+  if s >= err:
     result.h = arctan2(c.v, c.u) * 57.29577951308232087680
     if result.h < 0.0:
       result.h += 360.0
@@ -202,16 +204,16 @@ func maxChromaForLH(l, h: float64): float64 =
       result = len
 
 func toHSLuv(c: tuple[l, c, h: float64]): ColorHSLuv =
-  if c.l <= 99.9999999 and c.l >= 0.00000001:
+  if c.l <= uperr and c.l >= err:
     result.s = c.c / maxChromaForLH(c.l, c.h) * 100
-  if c.c >= 0.00000001:
+  if c.c >= err:
     result.h = c.h
   result.l = c.l
 
 func toLCH(c: ColorHSLuv): tuple[l, c, h: float64] =
-  if c.l <= 99.9999999 and c.l >= 0.00000001:
+  if c.l <= uperr and c.l >= err:
     result.c = maxChromaForLH(c.l, c.h) / 100.0 * c.s
-  if c.s >= 0.00000001:
+  if c.s >= err:
     result.h = c.h
   result.l = c.l
 
@@ -227,7 +229,7 @@ func l2y(l: float64): float64 =
     x * x * x
 
 func toXYZ(c: tuple[l, u, v: float64]): tuple[x, y, z: float64] =
-  if c.l > 0.00000001:
+  if c.l > err:
     let
       varU = c.u / (13.0 * c.l) + refU
       varV = c.v / (13.0 * c.l) + refV
@@ -267,16 +269,16 @@ func maxSafeChromaForL(l: float64): float64 =
   result = sqrt result
 
 func toHPLuv(c: tuple[l, c, h: float64]): ColorHPLuv =
-  if c.l <= 99.9999999 and c.l >= 0.00000001:
+  if c.l <= uperr and c.l >= err:
     result.p = c.c / maxSafeChromaForL(c.l) * 100.0
-  if c.c >= 0.00000001:
+  if c.c >= err:
     result.h = c.h
   result.l = c.l
 
 func toLCH(c: ColorHPLuv): tuple[l, c, h: float64] =
-  if c.l <= 99.9999999 and c.l >= 0.00000001:
+  if c.l <= uperr and c.l >= err:
     result.c = maxSafeChromaForL(c.l) / 100.0 * c.p
-  if c.p >= 0.00000001:
+  if c.p >= err:
     result.h = c.h
   result.l = c.l
 
