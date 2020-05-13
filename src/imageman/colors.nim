@@ -2,15 +2,15 @@ import math, random, typetraits
 
 type
   ColorComponent* = uint8 | float32 | float64
-  ColorRGBU* = distinct array[3, uint8]
-  ColorRGBAU* = distinct array[4, uint8]
-  ColorRGBF* = distinct array[3, float32]
-  ColorRGBAF* = distinct array[4, float32]
-  ColorRGBF64* = distinct array[3, float64]
-  ColorRGBAF64* = distinct array[4, float64]
-  ColorHSL* = distinct array[3, float32]
-  ColorHSLuv* = distinct array[3, float64]
-  ColorHPLuv* = distinct array[3, float64]
+  ColorRGBU* = distinct array[3, uint8] ## RGB range 0..255
+  ColorRGBAU* = distinct array[4, uint8] ## RGB range 0..255
+  ColorRGBF* = distinct array[3, float32] ## RGB range 0..1
+  ColorRGBAF* = distinct array[4, float32] ## RGB range 0..1
+  ColorRGBF64* = distinct array[3, float64] ## RGB range 0..1
+  ColorRGBAF64* = distinct array[4, float64] ## RGB range 0..1
+  ColorHSL* = distinct array[3, float32] ## Hue 0..360, Sat/Light 0..1
+  ColorHSLuv* = distinct array[3, float64] ## Hue 0..360, Sat/Light 0..1
+  ColorHPLuv* = distinct array[3, float64] ## Hue 0..360, Sat/Light 0..1
   ColorRGBUAny* = ColorRGBU | ColorRGBAU
   ColorRGBFAny* = ColorRGBF | ColorRGBAF
   ColorRGBF64Any* = ColorRGBF64 | ColorRGBAF64
@@ -205,17 +205,17 @@ func maxChromaForLH(l, h: float64): float64 =
 
 func toHSLuv(c: tuple[l, c, h: float64]): ColorHSLuv =
   if c.l in err..uperr:
-    result.s = c.c / maxChromaForLH(c.l, c.h) * 100
+    result.s = c.c / maxChromaForLH(c.l, c.h)
   if c.c >= err:
     result.h = c.h
-  result.l = c.l
+  result.l = c.l / 100
 
 func toLCH(c: ColorHSLuv): tuple[l, c, h: float64] =
-  if c.l in err..uperr:
-    result.c = maxChromaForLH(c.l, c.h) / 100.0 * c.s
-  if c.s >= err:
+  result.l = c.l * 100
+  if result.l in err..uperr:
+    result.c = maxChromaForLH(result.l, c.h) * c.s
+  if c.s * 100 >= err:
     result.h = c.h
-  result.l = c.l
 
 func toLUV(c: tuple[l, c, h: float64]): tuple[l, u, v: float64] =
   let hrad = c.h * 0.01745329251994329577
@@ -270,17 +270,17 @@ func maxSafeChromaForL(l: float64): float64 =
 
 func toHPLuv(c: tuple[l, c, h: float64]): ColorHPLuv =
   if c.l in err..uperr:
-    result.p = c.c / maxSafeChromaForL(c.l) * 100.0
+    result.p = c.c / maxSafeChromaForL(c.l)
   if c.c >= err:
     result.h = c.h
-  result.l = c.l
+  result.l = c.l / 100
 
 func toLCH(c: ColorHPLuv): tuple[l, c, h: float64] =
-  if c.l in err..uperr:
-    result.c = maxSafeChromaForL(c.l) / 100.0 * c.p
-  if c.p >= err:
+  result.l = c.l * 100
+  if result.l in err..uperr:
+    result.c = maxSafeChromaForL(result.l) * c.p
+  if c.p * 100 >= err:
     result.h = c.h
-  result.l = c.l
 
 #[
 to/from|RGBU|RGBAU|RGBF|RGBAF|RGBF64|RGBAF64|HSL|HSLuv|HPLuv|

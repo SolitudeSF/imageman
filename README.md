@@ -51,6 +51,8 @@ Manipulate. Images.
     - [x] `ColorHSL` - 32bit float
     - [x] `ColorHSLuv` - 64bit float, perceptually uniform, unlike normal HSL
     - [x] `ColorHPLuv` - 64bit float
+    RGB float components have valid range from 0 to 1.
+    Hue range is 0..360. Saturation/Lightness range from 0 to 1.
 - Filtering
     - [x] General convolutional kernel routine
         - [x] Smoothing
