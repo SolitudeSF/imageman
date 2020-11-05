@@ -28,7 +28,7 @@ type
   PngInfo = object
   PngRWFn = proc(png: ptr PngStruct, outBytes: ptr cuchar, count: csize_t)
   PngFlushFn = proc(png: ptr PngStruct)
-  PngErrorFn = proc(png: ptr PngStruct, msg: cstring)
+  PngErrorFn = proc(png: ptr PngStruct, msg: cstring) {.cdecl.}
 
   DataReader = object
     start: pointer
@@ -85,10 +85,10 @@ proc pngReadString(png: ptr PngStruct, outBytes: ptr cuchar, count: csize_t) =
     raise newException(IOError, "Couldn't read PNG data")
   copyMem outBytes, address, count
 
-proc errorHandler(png: ptr PngStruct, msg: cstring) =
+proc errorHandler(png: ptr PngStruct, msg: cstring) {.cdecl.} =
   raise newException(IOError, $msg)
 
-proc warningHandler(png: ptr PngStruct, msg: cstring) =
+proc warningHandler(png: ptr PngStruct, msg: cstring) {.cdecl.} =
   discard
 
 template readPNGImpl(source: typed): untyped =
