@@ -76,6 +76,8 @@ template componentType*(t: typedesc[Color]): typedesc =
   else:
     uint8
 
+template hasAlpha*(t: typedesc[Color]): bool = t is ColorA
+
 template iteratorImpl[T: Color](c: T): untyped =
   when T is ColorRGBAny:
     yield c.r
