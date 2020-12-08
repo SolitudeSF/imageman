@@ -17,15 +17,17 @@ proc replaceNodes(ast: NimNode): NimNode =
       return rTree
   result = inspect(ast)
 
-macro genMutating*(p: typed, name: untyped, doc: static[string] = "") =
+macro genMutating*(p: typed, name: untyped, doc: static[string] = ""): untyped =
   ## Macro for generating mutating version of non-mutating procedure.
   result = p.getImpl
   assert result.kind in {nnkFuncDef, nnkProcDef}
 
   var call = nnkCall.newTree(result[0].strVal.ident)
   for i in 1..<result[3].len:
-    for c in result[3][i]:
+    for j in 0..result[3][i].len - 3:
+      let c = result[3][i][j]
       if c.kind == nnkIdent: call.add c
+      elif c.kind == nnkSym: call.add c.strVal.ident
 
   result[0] = nnkPostfix.newTree(ident "*", ident name.strVal)
   result[2] = result[5][1]
