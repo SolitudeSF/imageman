@@ -1,3 +1,4 @@
+import algorithm
 import ./colors, ./util, ./private/[backends, imagetype]
 export backends, imagetype
 export ColorRGBU, ColorRGBAU, ColorRGBF, ColorRGBAF, ColorRGBF64, ColorRGBAF64,
@@ -13,6 +14,10 @@ type
   PadKind* = enum
     ## Enum representing all padding algorithms.
     pkEmpty, pkExtend, pkWrap, pkMirror
+
+  Bucket = object
+    c: ColorRGBF64
+    n: float64
 
 func contains*(i: Image, p: Point): bool =
   ## Checks if point is inside the image.
@@ -267,3 +272,52 @@ func flipVert*[T: Color](img: var Image[T]) =
     let t = img.data[a]
     img.data[a] = img.data[b]
     img.data[b] = t
+
+func cmp(a, b: Bucket): int = cmp(a.n, b.n)
+
+func getDominantColors*[T: Color](i: Image[T], threshold = 0.01): seq[ColorRGBF64] =
+  ## Returns sequence of dominant colors
+  var
+    buckets: array[2, array[2, array[2, Bucket]]]
+    sampledCount: float64
+
+  for pixel in i.data:
+    let
+      index = pixel.to(ColorRGBU)
+      pixel = pixel.to(ColorRGBAF64)
+      i = index.r shr 7
+      j = index.g shr 7
+      k = index.b shr 7
+
+    when T is ColorA:
+      let alpha = pixel.a
+    else:
+      const alpha = 1.0
+
+    buckets[i][j][k].c.r += pixel.r * alpha
+    buckets[i][j][k].c.g += pixel.g * alpha
+    buckets[i][j][k].c.b += pixel.b * alpha
+    buckets[i][j][k].n += alpha
+    sampledCount += alpha
+
+  var averages: seq[Bucket]
+  for i in 0..1:
+    for j in 0..1:
+      for k in 0..1:
+        template currentBucket: untyped = buckets[i][j][k]
+        if currentBucket.n > 0.0:
+          averages.add Bucket(
+            c: ColorRGBF64 [
+              currentBucket.c.r / currentBucket.n,
+              currentBucket.c.g / currentBucket.n,
+              currentBucket.c.b / currentBucket.n
+            ],
+            n: currentBucket.n
+          )
+
+  sort averages, cmp
+
+  for bucket in averages:
+    if bucket.n / sampledCount > threshold:
+      result.add bucket.c
+
