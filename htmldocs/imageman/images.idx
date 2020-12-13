@@ -1,0 +1,44 @@
+Point	imageman/images.html#Point	images: Point	
+Rect	imageman/images.html#Rect	images: Rect	
+pkEmpty	imageman/images.html#pkEmpty	PadKind.pkEmpty	
+pkExtend	imageman/images.html#pkExtend	PadKind.pkExtend	
+pkWrap	imageman/images.html#pkWrap	PadKind.pkWrap	
+pkMirror	imageman/images.html#pkMirror	PadKind.pkMirror	
+PadKind	imageman/images.html#PadKind	images: PadKind	
+contains	imageman/images.html#contains,Image,Point	images: contains(i: Image; p: Point): bool	
+contains	imageman/images.html#contains,Image,int,int	images: contains(i: Image; x, y: int): bool	
+`in`	imageman/images.html#in.t,Point,Image	images: `in`(p: Point; i: Image): bool	
+w	imageman/images.html#w.t,Image	images: w(i: Image): int	
+h	imageman/images.html#h.t,Image	images: h(i: Image): int	
+`[]`	imageman/images.html#[].t,Image,int,int	images: `[]`(i: Image; x, y: int): Color	
+`[]`	imageman/images.html#[].t,Image,int	images: `[]`(i: Image; x: int): Color	
+`[]`	imageman/images.html#[].t,Image,Point	images: `[]`(i: Image; p: Point): Color	
+`[]=`	imageman/images.html#[]=.t,Image,int,int,Color	images: `[]=`(i: var Image; x, y: int; c: Color)	
+`[]=`	imageman/images.html#[]=.t,Image,int,Color	images: `[]=`(i: var Image; x: int; c: Color)	
+`[]=`	imageman/images.html#[]=.t,Image,Point,Color	images: `[]=`(i: var Image; p: Point; c: Color)	
+colorType	imageman/images.html#colorType.t,Image[T: Color]	images: colorType[T; ](i: Image[T]): typedesc[T]	
+initRect	imageman/images.html#initRect,int,int,int,int	images: initRect(x, y, w, h: int): Rect	
+toRect	imageman/images.html#toRect,Point,Point	images: toRect(a, b: Point): Rect	
+initImage	imageman/images.html#initImage,Natural,Natural	images: initImage[T: Color](w, h: Natural): Image[T]	
+converted	imageman/images.html#converted,Image[I: Color],typedesc[T]	images: converted[I, T: Color](i: Image[I]; t: typedesc[T]): Image[T]	
+fill	imageman/images.html#fill,Image[T: Color],T	images: fill[T: Color](i: var Image[T]; c: T)	
+copyRegion	imageman/images.html#copyRegion,Image[T: Color],int,int,int,int	images: copyRegion[T: Color](image: Image[T]; x, y, w, h: int): Image[T]	
+copyRegion	imageman/images.html#copyRegion,Image[T: Color],Rect	images: copyRegion[T: Color](image: Image[T]; r: Rect): Image[T]	
+`[]`	imageman/images.html#[],Image[T: Color],Slice[int],Slice[int]	images: `[]`[T: Color](image: Image[T]; x, y: Slice[int]): Image[T]	
+blit	imageman/images.html#blit,Image[T: Color],Image,int,int	images: blit[T: Color](dest: var Image[T]; src: Image; x, y: int)	
+blit	imageman/images.html#blit,Image[T: Color],Image,int,int,Rect	images: blit[T: Color](dest: var Image[T]; src: Image; x, y: int; rect: Rect)	
+paddedEmpty	imageman/images.html#paddedEmpty,Image[T: Color],int,int	images: paddedEmpty[T: Color](img: Image[T]; padX, padY: int): Image[T]	
+paddedExtend	imageman/images.html#paddedExtend,Image[T: Color],int,int	images: paddedExtend[T: Color](img: Image[T]; padX, padY: int): Image[T]	
+paddedWrap	imageman/images.html#paddedWrap,Image[T: Color],int,int	images: paddedWrap[T: Color](img: Image[T]; padX, padY: int): Image[T]	
+paddedMirror	imageman/images.html#paddedMirror,Image[T: Color],int,int	images: paddedMirror[T: Color](img: Image[T]; padX, padY: int): Image[T]	
+padded	imageman/images.html#padded,Image[T: Color],int,int,PadKind	images: padded[T: Color](img: Image[T]; padX, padY: int; kind: PadKind): Image[T]	
+padEmpty	imageman/images.html#padEmpty,Image[T: Color],int,int	images: padEmpty[T: Color](img: var Image[T]; padX, padY: int)	
+padExtend	imageman/images.html#padExtend,Image[T: Color],int,int	images: padExtend[T: Color](img: var Image[T]; padX, padY: int)	
+padWrap	imageman/images.html#padWrap,Image[T: Color],int,int	images: padWrap[T: Color](img: var Image[T]; padX, padY: int)	
+padMirror	imageman/images.html#padMirror,Image[T: Color],int,int	images: padMirror[T: Color](img: var Image[T]; padX, padY: int)	
+pad	imageman/images.html#pad,Image[T: Color],int,int,PadKind	images: pad[T: Color](img: var Image[T]; padX, padY: int; kind: PadKind)	
+flippedHoriz	imageman/images.html#flippedHoriz,Image[T: Color]	images: flippedHoriz[T: Color](img: Image[T]): Image[T]	
+flippedVert	imageman/images.html#flippedVert,Image[T: Color]	images: flippedVert[T: Color](img: Image[T]): Image[T]	
+flipHoriz	imageman/images.html#flipHoriz,Image[T: Color]	images: flipHoriz[T: Color](img: var Image[T])	
+flipVert	imageman/images.html#flipVert,Image[T: Color]	images: flipVert[T: Color](img: var Image[T])	
+getDominantColors	imageman/images.html#getDominantColors,Image[T: Color],float	images: getDominantColors[T: Color](i: Image[T]; threshold = 0.01): seq[ColorRGBF64]	

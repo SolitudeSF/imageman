@@ -1,0 +1,12 @@
+circle	imageman/drawing.html#circle.i,int,int,int	drawing: circle(x0, y0, r: int): Point	
+circle1	imageman/drawing.html#circle1.i,int,int,int	drawing: circle1(x0, y0, r: int): Point	
+circle2	imageman/drawing.html#circle2.i,int,int,int	drawing: circle2(x0, y0, r: int): Point	
+circleBres	imageman/drawing.html#circleBres.i,int,int,int	drawing: circleBres(x0, y0, r: int): Point	
+drawCircle	imageman/drawing.html#drawCircle,Image[T: Color],int,int,int,T	drawing: drawCircle[T: Color](i: var Image[T]; x0, y0, r: int; c: T)	
+drawCircle	imageman/drawing.html#drawCircle,Image[T: Color],Point,int,T	drawing: drawCircle[T: Color](i: var Image[T]; a: Point; r: int; c: T)	
+drawFilledCircle	imageman/drawing.html#drawFilledCircle,Image[T: Color],Point,int,T	drawing: drawFilledCircle[T: Color](i: var Image[T]; a: Point; r: int; c: T)	
+line	imageman/drawing.html#line.i,int,int,int,int	drawing: line(x0, y0, x1, y1: int): Point	
+drawLine	imageman/drawing.html#drawLine,Image[T: Color],int,int,int,int,T	drawing: drawLine[T: Color](i: var Image[T]; x0, y0, x1, y1: int; c: T)	
+drawLine	imageman/drawing.html#drawLine,Image[T: Color],Point,Point,T	drawing: drawLine[T: Color](i: var Image[T]; a, b: Point; c: T)	
+drawPolyline	imageman/drawing.html#drawPolyline,Image[T: Color],T,varargs[Point]	drawing: drawPolyline[T: Color](i: var Image[T]; closed = false; c: T; points: varargs[Point])	
+drawBrush	imageman/drawing.html#drawBrush,Image[T: Color],Point,Point,int,T	drawing: drawBrush[T: Color](i: var Image[T]; a, b: Point; r = 10; c: T)	

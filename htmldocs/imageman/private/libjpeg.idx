@@ -1,0 +1,7 @@
+JpegDCTMethod	imageman/private/libjpeg.html#JpegDCTMethod	libjpeg: JpegDCTMethod	
+readJPEG	imageman/private/libjpeg.html#readJPEG,File	libjpeg: readJPEG[T: Color](file: File; dctMethod = jDCTmISlow; fancyUpsampling = false;\n                  blockSmoothing = true): Image[T]	
+readJPEG	imageman/private/libjpeg.html#readJPEG,openArray[char]	libjpeg: readJPEG[T: Color](data: openArray[char]; dctMethod = jDCTmISlow;\n                  fancyUpsampling = false; blockSmoothing = true): Image[T]	
+loadJPEG	imageman/private/libjpeg.html#loadJPEG,string	libjpeg: loadJPEG[T: Color](path: string; dctMethod = jDCTmISlow; fancyUpsampling = false;\n                  blockSmoothing = true): Image[T]	
+writeJPEG	imageman/private/libjpeg.html#writeJPEG,Image[T: Color],File,range[]	libjpeg: writeJPEG[T: Color](i: Image[T]; file: File; quality: range[0 .. 100] = 75;\n                   optimizeCoding = false; dctMethod = jDCTmISlow)	
+writeJPEG	imageman/private/libjpeg.html#writeJPEG,Image[T: Color],range[]	libjpeg: writeJPEG[T: Color](i: Image[T]; quality: range[0 .. 100] = 75; optimizeCoding = false;\n                   dctMethod = jDCTmISlow): string	
+saveJPEG	imageman/private/libjpeg.html#saveJPEG,Image[T: Color],string,range[]	libjpeg: saveJPEG[T: Color](i: Image[T]; path: string; quality: range[0 .. 100] = 75;\n                  optimizeCoding = false; dctMethod = jDCTmISlow)	

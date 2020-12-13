@@ -1,0 +1,3 @@
+readImage	imageman/private/backends.html#readImage,File	backends: readImage[T: Color](file: File; jpegDCTMethod = jDCTmISlow;\n                   jpegFancyUpsampling = false; jpegBlockSmoothing = true): Image[T]	
+readImage	imageman/private/backends.html#readImage,openArray[char]	backends: readImage[T: Color](data: openArray[char]; jpegDCTMethod = jDCTmISlow;\n                   jpegFancyUpsampling = false; jpegBlockSmoothing = true): Image[T]	
+loadImage	imageman/private/backends.html#loadImage,string	backends: loadImage[T: Color](path: string): Image[T]	

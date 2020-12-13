@@ -1,0 +1,43 @@
+kernelSmoothing	imageman/filters.html#kernelSmoothing	filters: kernelSmoothing	
+kernelSharpening	imageman/filters.html#kernelSharpening	filters: kernelSharpening	
+kernelSharpen	imageman/filters.html#kernelSharpen	filters: kernelSharpen	
+kernelEdgeDetection	imageman/filters.html#kernelEdgeDetection	filters: kernelEdgeDetection	
+kernelEdgeDetection2	imageman/filters.html#kernelEdgeDetection2	filters: kernelEdgeDetection2	
+kernelEdgeDetection3	imageman/filters.html#kernelEdgeDetection3	filters: kernelEdgeDetection3	
+kernelRaised	imageman/filters.html#kernelRaised	filters: kernelRaised	
+kernelBoxBlur	imageman/filters.html#kernelBoxBlur	filters: kernelBoxBlur	
+kernelMotionBlur	imageman/filters.html#kernelMotionBlur	filters: kernelMotionBlur	
+kernelGaussianBlur5	imageman/filters.html#kernelGaussianBlur5	filters: kernelGaussianBlur5	
+kernelUnsharpMasking	imageman/filters.html#kernelUnsharpMasking	filters: kernelUnsharpMasking	
+withKernel	imageman/filters.html#withKernel,Image[T: Color],openArray[]	filters: withKernel[T: Color](img: Image[T]; k: openArray[array | seq | openArray];\n                    padKind = pkMirror): Image[T]	
+filteredSmoothing	imageman/filters.html#filteredSmoothing	filters: filteredSmoothing[T: Color](i`gensym13891317: Image[T]): Image[T]	
+filterSmoothing	imageman/filters.html#filterSmoothing	filters: filterSmoothing[T: Color](i`gensym13891318: var Image[T])	
+filteredSharpening	imageman/filters.html#filteredSharpening	filters: filteredSharpening[T: Color](i`gensym13895020: Image[T]): Image[T]	
+filterSharpening	imageman/filters.html#filterSharpening	filters: filterSharpening[T: Color](i`gensym13895021: var Image[T])	
+filteredSharpen	imageman/filters.html#filteredSharpen	filters: filteredSharpen[T: Color](i`gensym13900020: Image[T]): Image[T]	
+filterSharpen	imageman/filters.html#filterSharpen	filters: filterSharpen[T: Color](i`gensym13900021: var Image[T])	
+filteredRaised	imageman/filters.html#filteredRaised	filters: filteredRaised[T: Color](i`gensym13905020: Image[T]): Image[T]	
+filterRaised	imageman/filters.html#filterRaised	filters: filterRaised[T: Color](i`gensym13905021: var Image[T])	
+filteredEdgeDetection	imageman/filters.html#filteredEdgeDetection	filters: filteredEdgeDetection[T: Color](i`gensym13910020: Image[T]): Image[T]	
+filterEdgeDetection	imageman/filters.html#filterEdgeDetection	filters: filterEdgeDetection[T: Color](i`gensym13910021: var Image[T])	
+filteredEdgeDetection2	imageman/filters.html#filteredEdgeDetection2	filters: filteredEdgeDetection2[T: Color](i`gensym13915020: Image[T]): Image[T]	
+filterEdgeDetection2	imageman/filters.html#filterEdgeDetection2	filters: filterEdgeDetection2[T: Color](i`gensym13915021: var Image[T])	
+filteredEdgeDetection3	imageman/filters.html#filteredEdgeDetection3	filters: filteredEdgeDetection3[T: Color](i`gensym13920020: Image[T]): Image[T]	
+filterEdgeDetection3	imageman/filters.html#filterEdgeDetection3	filters: filterEdgeDetection3[T: Color](i`gensym13920021: var Image[T])	
+filteredBoxBlur	imageman/filters.html#filteredBoxBlur	filters: filteredBoxBlur[T: Color](i`gensym13925020: Image[T]): Image[T]	
+filterBoxBlur	imageman/filters.html#filterBoxBlur	filters: filterBoxBlur[T: Color](i`gensym13925021: var Image[T])	
+filteredMotionBlur	imageman/filters.html#filteredMotionBlur	filters: filteredMotionBlur[T: Color](i`gensym13930020: Image[T]): Image[T]	
+filterMotionBlur	imageman/filters.html#filterMotionBlur	filters: filterMotionBlur[T: Color](i`gensym13930021: var Image[T])	
+filteredGaussianBlur5	imageman/filters.html#filteredGaussianBlur5	filters: filteredGaussianBlur5[T: Color](i`gensym13935020: Image[T]): Image[T]	
+filterGaussianBlur5	imageman/filters.html#filterGaussianBlur5	filters: filterGaussianBlur5[T: Color](i`gensym13935021: var Image[T])	
+filteredUnsharpMasking	imageman/filters.html#filteredUnsharpMasking	filters: filteredUnsharpMasking[T: Color](i`gensym13940020: Image[T]): Image[T]	
+filterUnsharpMasking	imageman/filters.html#filterUnsharpMasking	filters: filterUnsharpMasking[T: Color](i`gensym13940021: var Image[T])	
+quantize	imageman/filters.html#quantize,T,float	filters: quantize[T: ColorRGBFAny | ColorRGBF64Any](c: var T; factor: float)	
+quantize	imageman/filters.html#quantize,T,uint8	filters: quantize[T: ColorRGBUAny](c: var T; factor: uint8)	
+quantized	imageman/filters.html#quantized,T,	filters: quantized[T: ColorRGBAny](c: T; factor: T.componentType): T	
+filterGreyscale	imageman/filters.html#filterGreyscale,Image[T: ColorRGBAny]	filters: filterGreyscale[T: ColorRGBAny](image: var Image[T])	
+filterNegative	imageman/filters.html#filterNegative,Image[T: ColorRGBAny]	filters: filterNegative[T: ColorRGBAny](image: var Image[T])	
+filterSepia	imageman/filters.html#filterSepia,Image[T: ColorRGBAny]	filters: filterSepia[T: ColorRGBAny](image: var Image[T])	
+filteredGreyscale	imageman/filters.html#filteredGreyscale,Image[T: ColorRGBAny]	filters: filteredGreyscale[T: ColorRGBAny](image: Image[T]): Image[T]	
+filteredNegative	imageman/filters.html#filteredNegative,Image[T: ColorRGBAny]	filters: filteredNegative[T: ColorRGBAny](image: Image[T]): Image[T]	
+filteredSepia	imageman/filters.html#filteredSepia,Image[T: ColorRGBAny]	filters: filteredSepia[T: ColorRGBAny](image: Image[T]): Image[T]	

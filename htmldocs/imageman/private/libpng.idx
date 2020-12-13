@@ -1,0 +1,12 @@
+fkNone	imageman/private/libpng.html#fkNone	FilterKind.fkNone	
+fkSub	imageman/private/libpng.html#fkSub	FilterKind.fkSub	
+fkUp	imageman/private/libpng.html#fkUp	FilterKind.fkUp	
+fkAvg	imageman/private/libpng.html#fkAvg	FilterKind.fkAvg	
+fkPaeth	imageman/private/libpng.html#fkPaeth	FilterKind.fkPaeth	
+FilterKind	imageman/private/libpng.html#FilterKind	libpng: FilterKind	
+readPNG	imageman/private/libpng.html#readPNG,File	libpng: readPNG[T: Color](file: File): Image[T]	
+readPNG	imageman/private/libpng.html#readPNG,openArray[char]	libpng: readPNG[T: Color](data: openArray[char]): Image[T]	
+loadPNG	imageman/private/libpng.html#loadPNG,string	libpng: loadPNG[T: Color](path: string): Image[T]	
+writePNG	imageman/private/libpng.html#writePNG,Image[T: Color],File,range[]	libpng: writePNG[T: Color](img: Image[T]; file: File; compression: range[0 .. 10] = 0;\n                  interlace = false; filter = fkNone)	
+writePNG	imageman/private/libpng.html#writePNG,Image[T: Color],range[]	libpng: writePNG[T: Color](img: Image[T]; compression: range[0 .. 10] = 0; interlace = false;\n                  filter = fkNone): string	
+savePNG	imageman/private/libpng.html#savePNG,Image[T: Color],string,range[]	libpng: savePNG[T: Color](i: Image[T]; filename: string; compression: range[0 .. 10] = 0;\n                 interlace = false; filter = fkNone)	

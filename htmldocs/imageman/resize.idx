@@ -1,0 +1,6 @@
+resizedNN	imageman/resize.html#resizedNN,Image[T: Color],int,int	resize: resizedNN[T: Color](img: Image[T]; w, h: int): Image[T]	
+resizedNN	imageman/resize.html#resizedNN,Image[T: Color],float,float	resize: resizedNN[T: Color](img: Image[T]; w, h: float): Image[T]	
+resizedNNi	imageman/resize.html#resizedNNi,Image[T: Color],int,int	resize: resizedNNi[T: Color](img: Image[T]; w, h: int): Image[T]	
+resizedBilinear	imageman/resize.html#resizedBilinear,Image[T: Color],int,int	resize: resizedBilinear[T: Color](img: Image[T]; w, h: int): Image[T]	
+resizedTrilinear	imageman/resize.html#resizedTrilinear,Image[T: Color],int,int	resize: resizedTrilinear[T: Color](img: Image[T]; w, h: int): Image[T]	
+resizedBicubic	imageman/resize.html#resizedBicubic,Image[T: Color],int,int,float,float	resize: resizedBicubic[T: Color](img: Image[T]; w, h: int; b = 1.0; c = 0.0): Image[T]	

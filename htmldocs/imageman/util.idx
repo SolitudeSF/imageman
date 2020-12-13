@@ -1,0 +1,2 @@
+genMutating	imageman/util.html#genMutating.m,typed,untyped,static[string]	util: genMutating(p: typed; name: untyped; doc: static[string] = &quot;&quot;): untyped	
+genNonMutating	imageman/util.html#genNonMutating.m,typed,untyped,static[string]	util: genNonMutating(p: typed; name: untyped; doc: static[string] = &quot;&quot;)	

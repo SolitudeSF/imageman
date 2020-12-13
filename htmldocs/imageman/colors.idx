@@ -1,0 +1,84 @@
+ColorComponent	imageman/colors.html#ColorComponent	colors: ColorComponent	
+ColorRGBU	imageman/colors.html#ColorRGBU	colors: ColorRGBU	
+ColorRGBAU	imageman/colors.html#ColorRGBAU	colors: ColorRGBAU	
+ColorRGBF	imageman/colors.html#ColorRGBF	colors: ColorRGBF	
+ColorRGBAF	imageman/colors.html#ColorRGBAF	colors: ColorRGBAF	
+ColorRGBF64	imageman/colors.html#ColorRGBF64	colors: ColorRGBF64	
+ColorRGBAF64	imageman/colors.html#ColorRGBAF64	colors: ColorRGBAF64	
+ColorHSL	imageman/colors.html#ColorHSL	colors: ColorHSL	
+ColorHSLuv	imageman/colors.html#ColorHSLuv	colors: ColorHSLuv	
+ColorHPLuv	imageman/colors.html#ColorHPLuv	colors: ColorHPLuv	
+ColorRGBUAny	imageman/colors.html#ColorRGBUAny	colors: ColorRGBUAny	
+ColorRGBFAny	imageman/colors.html#ColorRGBFAny	colors: ColorRGBFAny	
+ColorRGBF64Any	imageman/colors.html#ColorRGBF64Any	colors: ColorRGBF64Any	
+ColorRGBAny	imageman/colors.html#ColorRGBAny	colors: ColorRGBAny	
+ColorA	imageman/colors.html#ColorA	colors: ColorA	
+Color	imageman/colors.html#Color	colors: Color	
+`[]`	imageman/colors.html#[].t,T,Ordinal	colors: `[]`[T](c: T; n: Ordinal): auto	
+`[]=`	imageman/colors.html#[]=.t,T,Natural,	colors: `[]=`[T](c: var T; n: Natural; v)	
+len	imageman/colors.html#len.t,typedesc[Color]	colors: len(c: typedesc[Color]): int	
+len	imageman/colors.html#len.t,Color	colors: len(c: Color): int	
+high	imageman/colors.html#high.t,typedesc[Color]	colors: high(c: typedesc[Color]): int	
+high	imageman/colors.html#high.t,Color	colors: high(c: Color): int	
+`==`	imageman/colors.html#==.t,T,T	colors: `==`[T](x, y: T): bool	
+r	imageman/colors.html#r.t,ColorRGBAny	colors: r(c: ColorRGBAny): untyped	
+g	imageman/colors.html#g.t,ColorRGBAny	colors: g(c: ColorRGBAny): untyped	
+b	imageman/colors.html#b.t,ColorRGBAny	colors: b(c: ColorRGBAny): untyped	
+a	imageman/colors.html#a.t,ColorA	colors: a(c: ColorA): untyped	
+r=	imageman/colors.html#r=.t,ColorRGBAny,untyped	colors: r=(c: var ColorRGBAny; i: untyped)	
+g=	imageman/colors.html#g=.t,ColorRGBAny,untyped	colors: g=(c: var ColorRGBAny; i: untyped)	
+b=	imageman/colors.html#b=.t,ColorRGBAny,untyped	colors: b=(c: var ColorRGBAny; i: untyped)	
+a=	imageman/colors.html#a=.t,ColorA,untyped	colors: a=(c: var ColorA; i: untyped)	
+h	imageman/colors.html#h.t,ColorHSL	colors: h(c: ColorHSL): float32	
+s	imageman/colors.html#s.t,ColorHSL	colors: s(c: ColorHSL): float32	
+l	imageman/colors.html#l.t,ColorHSL	colors: l(c: ColorHSL): float32	
+h=	imageman/colors.html#h=.t,ColorHSL,float32	colors: h=(c: var ColorHSL; i: float32)	
+s=	imageman/colors.html#s=.t,ColorHSL,float32	colors: s=(c: var ColorHSL; i: float32)	
+l=	imageman/colors.html#l=.t,ColorHSL,float32	colors: l=(c: var ColorHSL; i: float32)	
+h	imageman/colors.html#h.t	colors: h(c: ColorHSLuv | ColorHPLuv): float64	
+s	imageman/colors.html#s.t,ColorHSLuv	colors: s(c: ColorHSLuv): float64	
+p	imageman/colors.html#p.t,ColorHPLuv	colors: p(c: ColorHPLuv): float64	
+l	imageman/colors.html#l.t	colors: l(c: ColorHSLuv | ColorHPLuv): float64	
+h=	imageman/colors.html#h=.t,,float64	colors: h=(c: var (ColorHSLuv | ColorHPLuv); i: float64)	
+s=	imageman/colors.html#s=.t,ColorHSLuv,float64	colors: s=(c: var ColorHSLuv; i: float64)	
+p=	imageman/colors.html#p=.t,ColorHPLuv,float64	colors: p=(c: var ColorHPLuv; i: float64)	
+l=	imageman/colors.html#l=.t,,float64	colors: l=(c: var (ColorHSLuv | ColorHPLuv); i: float64)	
+componentType	imageman/colors.html#componentType.t,typedesc[Color]	colors: componentType(t: typedesc[Color]): typedesc	
+hasAlpha	imageman/colors.html#hasAlpha.t,typedesc[Color]	colors: hasAlpha(t: typedesc[Color]): bool	
+items	imageman/colors.html#items.i,T	colors: items[T: Color](c: T): T.componentType	
+mitems	imageman/colors.html#mitems.i,T	colors: mitems[T: Color](c: var T): var T.componentType	
+maxComponentValue	imageman/colors.html#maxComponentValue.t,typedesc[ColorRGBAny]	colors: maxComponentValue(t: typedesc[ColorRGBAny]): untyped	
+precise	imageman/colors.html#precise.t,T	colors: precise[T](t: T): untyped	
+precise	imageman/colors.html#precise.t,typedesc[T]	colors: precise[T; ](t: typedesc[T]): typedesc	
+toFloat32	imageman/colors.html#toFloat32,uint8	colors: toFloat32(c: uint8): float32	
+toFloat64	imageman/colors.html#toFloat64,uint8	colors: toFloat64(c: uint8): float64	
+toUint8	imageman/colors.html#toUint8	colors: toUint8(c: float32 | float64): uint8	
+to	imageman/colors.html#to,T,typedesc[T]	colors: to[T: Color](c: T; t: typedesc[T]): T	
+to	imageman/colors.html#to,ColorRGBAU,typedesc[T]	colors: to[T: ColorRGBU](c: ColorRGBAU; t: typedesc[T]): T	
+to	imageman/colors.html#to,ColorRGBU,typedesc[T]	colors: to[T: ColorRGBAU](c: ColorRGBU; t: typedesc[T]): T	
+to	imageman/colors.html#to,ColorRGBAF,typedesc[T]	colors: to[T: ColorRGBF](c: ColorRGBAF; t: typedesc[T]): T	
+to	imageman/colors.html#to,ColorRGBF,typedesc[T]	colors: to[T: ColorRGBAF](c: ColorRGBF; t: typedesc[T]): T	
+to	imageman/colors.html#to,,typedesc[T]	colors: to[T: ColorRGBUAny](c: ColorRGBFAny | ColorRGBF64Any; t: typedesc[T]): T	
+to	imageman/colors.html#to,ColorRGBUAny,typedesc[T]	colors: to[T: ColorRGBFAny](c: ColorRGBUAny; t: typedesc[T]): T	
+to	imageman/colors.html#to,ColorRGBUAny,typedesc[T]_2	colors: to[T: ColorRGBF64Any](c: ColorRGBUAny; t: typedesc[T]): T	
+to	imageman/colors.html#to,ColorHSL,typedesc[T]	colors: to[T: ColorRGBF](c: ColorHSL; t: typedesc[T]): T	
+to	imageman/colors.html#to,ColorRGBF,typedesc[T]_2	colors: to[T: ColorHSL](c: ColorRGBF; t: typedesc[T]): T	
+to	imageman/colors.html#to,ColorRGBF64Any,typedesc[T]	colors: to[T: ColorRGBFAny](c: ColorRGBF64Any; t: typedesc[T]): T	
+to	imageman/colors.html#to,ColorRGBFAny,typedesc[T]	colors: to[T: ColorRGBF64Any](c: ColorRGBFAny; t: typedesc[T]): T	
+to	imageman/colors.html#to,ColorRGBF64,typedesc[T]	colors: to[T: ColorRGBAF64](c: ColorRGBF64; t: typedesc[T]): T	
+to	imageman/colors.html#to,ColorRGBAF64,typedesc[T]	colors: to[T: ColorRGBF64](c: ColorRGBAF64; t: typedesc[T]): T	
+to	imageman/colors.html#to,ColorRGBF64Any,typedesc[T]_2	colors: to[T: ColorHSLuv](c: ColorRGBF64Any; t: typedesc[T]): T	
+to	imageman/colors.html#to,ColorHSLuv,typedesc[T]	colors: to[T: ColorRGBF64Any](c: ColorHSLuv; t: typedesc[T]): T	
+to	imageman/colors.html#to,ColorRGBF64,typedesc[T]_2	colors: to[T: ColorHPLuv](c: ColorRGBF64; t: typedesc[T]): T	
+to	imageman/colors.html#to,ColorHPLuv,typedesc[T]	colors: to[T: ColorRGBF64Any](c: ColorHPLuv; t: typedesc[T]): T	
+blendColorValue	imageman/colors.html#blendColorValue,T,T,float32	colors: blendColorValue[T: ColorComponent](a, b: T; t: float32): T	
+`+`	imageman/colors.html#+,T,T	colors: `+`[T: Color](a, b: T): T	
+`$`	imageman/colors.html#$,ColorA	colors: `$`(c: ColorA): string	
+`$`	imageman/colors.html#$	colors: `$`(c: ColorRGBU | ColorRGBF | ColorRGBF64): string	
+`$`	imageman/colors.html#$_2	colors: `$`(c: ColorHSL | ColorHSLuv): string	
+`$`	imageman/colors.html#$,ColorHPLuv	colors: `$`(c: ColorHPLuv): string	
+`~=`	imageman/colors.html#~=,T,T,type(componentType(T)(9.999999999999999e-12))	colors: `~=`[T: Color](a, b: T; e = componentType(T)(9.999999999999999e-12)): bool	
+rand	imageman/colors.html#rand	colors: rand[T: Color](): T	
+rand	imageman/colors.html#rand,Rand	colors: rand[T: Color](r: var Rand): T	
+isGreyscale	imageman/colors.html#isGreyscale,ColorRGBAny	colors: isGreyscale(c: ColorRGBAny): bool	
+interpolate	imageman/colors.html#interpolate,T,T,float32,float	colors: interpolate[T: Color](a, b: T; x: float32; L = 1.0): T	
