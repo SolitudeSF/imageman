@@ -78,3 +78,11 @@ macro genNonMutating*(p: typed, name: untyped, doc: static[string] = "") =
   result[6] = body
 
   result = replaceNodes(result)
+
+template copy*[T1, T2](dst: var openArray[T1], src: openArray[T2], count: Natural, body): untyped =
+  when nimvm:
+    for i in 0..<count:
+      let it {.inject.} = src[i]
+      dst[i] = body
+  else:
+    copyMem addr dst[0], unsafeAddr src[0], count * sizeof T1
