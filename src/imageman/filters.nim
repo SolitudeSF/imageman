@@ -1,59 +1,21 @@
 import ./images, ./colors, ./util
 import math
 
-const
-  kernelSmoothing* = [[1.0, 1.0, 1.0],
-                      [1.0, 2.0, 1.0],
-                      [1.0, 1.0, 1.0]]
-  kernelSharpening* = [[-1.0, -1.0, -1.0],
-                       [-1.0,  9.0, -1.0],
-                       [-1.0, -1.0, -1.0]]
-  kernelSharpen* = [[ 0.0, -1.0,  0.0],
-                    [-1.0,  5.0, -1.0],
-                    [ 0.0, -1.0,  0.0]]
-  kernelEdgeDetection* = [[ 1.0, 0.0,-1.0],
-                          [ 0.0, 0.0, 0.0],
-                          [-1.0, 0.0, 1.0]]
-  kernelEdgeDetection2* = [[0.0, 1.0, 0.0],
-                           [1.0,-4.0, 1.0],
-                           [0.0, 1.0, 0.0]]
-  kernelEdgeDetection3* = [[-1.0, -1.0, -1.0],
-                           [-1.0,  8.0, -1.0],
-                           [-1.0, -1.0, -1.0]]
-  kernelRaised* = [[0.0, 0.0,-2.0],
-                   [0.0, 2.0, 0.0],
-                   [1.0, 0.0, 0.0]]
-  kernelBoxBlur* = [[1.0, 1.0, 1.0],
-                    [1.0, 1.0, 1.0],
-                    [1.0, 1.0, 1.0]]
-  kernelMotionBlur* = [[0.0, 0.0, 1.0],
-                       [0.0, 0.0, 0.0],
-                       [1.0, 0.0, 0.0]]
-  kernelGaussianBlur5* = [[1.0,  4.0,  6.0,  4.0, 1.0],
-                          [4.0, 16.0, 24.0, 16.0, 4.0],
-                          [6.0, 24.0, 36.0, 24.0, 6.0],
-                          [4.0, 16.0, 24.0, 16.0, 4.0],
-                          [1.0,  4.0,  6.0,  4.0, 1.0]]
-  kernelUnsharpMasking* = [[1.0,  4.0,   6.0,  4.0, 1.0],
-                           [4.0, 16.0,  24.0, 16.0, 4.0],
-                           [6.0, 24.0,-476.0, 24.0, 6.0],
-                           [4.0, 16.0,  24.0, 16.0, 4.0],
-                           [1.0,  4.0,   6.0,  4.0, 1.0]]
+func toKernel*(a: openArray[float32], width: int): Image[ColorGF] =
+  result.initImage width, a.len div width
+  copy result.data, a, a.len, ColorGF [it]
 
-func withKernel*[T: Color](img: Image[T], k: openArray[array | seq | openArray],
-  padKind = pkMirror): Image[T] =
-
+func convolved*[T: Color](img: Image[T], k: Image[ColorGF], padKind = pkMirror): Image[T] =
   result = initImage[T](img.width, img.height)
 
   let
-    kh = k.len div 2
-    kw = k[0].len div 2
+    kh = k.height div 2
+    kw = k.width div 2
     src = img.padded(kw, kh, padKind)
     denom = block:
       var s = 0.0
-      for i in k:
-        for j in i:
-          s += j
+      for i in k.data:
+        s += i[0]
       if s == 0: 1.0 else: s
 
   for y in 0..<result.height:
@@ -61,35 +23,21 @@ func withKernel*[T: Color](img: Image[T], k: openArray[array | seq | openArray],
     for x in 0..<result.width:
       var r, g, b = 0.0'f32
       let precalc = (y + kh) * src.width + kw + x
-      for j in 0..<k.len:
+      for j in 0..<k.height:
         let precalc = precalc + (j - kh) * src.width
-        for i in 0..<k[0].len:
-          let pos = precalc + i - kw
-          r += src[pos].r.precise * k[i][j]
-          g += src[pos].g.precise * k[i][j]
-          b += src[pos].b.precise * k[i][j]
+        for i in 0..<k.width:
+          let
+            pos = precalc + i - kw
+            kpos = j * k.width + i
+          r += src[pos].r.precise * k[kpos][0]
+          g += src[pos].g.precise * k[kpos][0]
+          b += src[pos].b.precise * k[kpos][0]
       let target = yw + x
       result[target].r = (T.componentType) clamp(r / denom, 0, T.maxComponentValue.precise)
       result[target].g = (T.componentType) clamp(g / denom, 0, T.maxComponentValue.precise)
       result[target].b = (T.componentType) clamp(b / denom, 0, T.maxComponentValue.precise)
       when T is ColorA:
         result[target].a = img[target].a
-
-template genFilter(n): untyped =
-  func `filtered n`*[T: Color](i: Image[T]): Image[T] = withKernel i, `kernel n`
-  func `filter n`*[T: Color](i: var Image[T]) = i = i.withKernel `kernel n`
-
-genFilter Smoothing
-genFilter Sharpening
-genFilter Sharpen
-genFilter Raised
-genFilter EdgeDetection
-genFilter EdgeDetection2
-genFilter EdgeDetection3
-genFilter BoxBlur
-genFilter MotionBlur
-genFilter GaussianBlur5
-genFilter UnsharpMasking
 
 func quantize*[T: ColorRGBFAny | ColorRGBF64Any](c: var T, factor: float) =
   c.r = round(factor * c.r) / factor
