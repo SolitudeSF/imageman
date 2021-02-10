@@ -11,12 +11,22 @@ type
   ColorHSL* = distinct array[3, float32] ## Hue 0..360, Sat/Light 0..1
   ColorHSLuv* = distinct array[3, float64] ## Hue 0..360, Sat/Light 0..1
   ColorHPLuv* = distinct array[3, float64] ## Hue 0..360, Sat/Light 0..1
+  ColorGU* = distinct array[1, uint8]
+  ColorGAU* = distinct array[2, uint8]
+  ColorGF* = distinct array[1, float32]
+  ColorGAF* = distinct array[2, float32]
+  ColorGF64* = distinct array[1, float64]
+  ColorGAF64* = distinct array[2, float64]
+  ColorGUAny* = ColorGU | ColorGAU
+  ColorGFAny* = ColorGF | ColorGAF
+  ColorGF64Any* = ColorGF64 | ColorGAF64
+  ColorGAny = ColorGUAny | ColorGFAny | ColorGF64Any
   ColorRGBUAny* = ColorRGBU | ColorRGBAU
   ColorRGBFAny* = ColorRGBF | ColorRGBAF
   ColorRGBF64Any* = ColorRGBF64 | ColorRGBAF64
   ColorRGBAny* = ColorRGBUAny | ColorRGBFAny | ColorRGBF64Any
-  ColorA* = ColorRGBAU | ColorRGBAF | ColorRGBAF64
-  Color* = ColorRGBAny | ColorHSL | ColorHSLuv | ColorHPLuv
+  ColorA* = ColorRGBAU | ColorRGBAF | ColorRGBAF64 | ColorGAU | ColorGAF | ColorGAF64
+  Color* = ColorRGBAny | ColorGAny | ColorHSL | ColorHSLuv | ColorHPLuv
 
 const
   hsluvM = [
