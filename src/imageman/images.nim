@@ -87,6 +87,8 @@ func initImage*[T: Color](w, h: Natural): Image[T] =
   ## Creates new image with specified color mode and dimensions.
   Image[T](data: newSeq[T](w * h), height: h, width: w)
 
+func initImage*[T: Color](i: var Image[T], w, h: Natural) =
+  i = initImage[T](w, h)
 
 func converted*[I, T: Color](i: Image[I], t: typedesc[T]): Image[T] =
   ## Converts image color mode if appropriate converter found.
