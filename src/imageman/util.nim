@@ -17,6 +17,25 @@ proc replaceNodes(ast: NimNode): NimNode =
       return rTree
   result = inspect(ast)
 
+proc replaceNodes(ast, what, by: NimNode): NimNode =
+  ## Replace "what" ident node by "by"
+  proc inspect(node: NimNode): NimNode =
+    case node.kind:
+    of {nnkIdent, nnkSym}:
+      if node.eqIdent(what):
+        return by
+      return node
+    of nnkEmpty:
+      return node
+    of nnkLiterals:
+      return node
+    else:
+      var rTree = node.kind.newTree()
+      for child in node:
+        rTree.add inspect(child)
+      return rTree
+  result = inspect(ast)
+
 macro genMutating*(p: typed, name: untyped, doc: static[string] = ""): untyped =
   ## Macro for generating mutating version of non-mutating procedure.
   result = p.getImpl
@@ -86,3 +105,11 @@ template copy*[T1, T2](dst: var openArray[T1], src: openArray[T2], count: Natura
       dst[i] = body
   else:
     copyMem addr dst[0], unsafeAddr src[0], count * sizeof T1
+
+macro staticFor*(idx: untyped{nkIdent}, start, stopEx: static int, body: untyped): untyped =
+  result = newStmtList()
+  for i in start ..< stopEx:
+    result.add nnkBlockStmt.newTree(
+      ident("unrolledIter_" & $idx & $i),
+      body.replaceNodes(idx, newLit i)
+    )

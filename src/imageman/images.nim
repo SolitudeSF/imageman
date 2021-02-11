@@ -1,9 +1,6 @@
 import algorithm
 import ./colors, ./util, ./private/[backends, imagetype]
 export backends, imagetype
-export ColorRGBU, ColorRGBAU, ColorRGBF, ColorRGBAF, ColorRGBF64, ColorRGBAF64,
-  ColorHSL, ColorHSLuv, ColorHPLuv, ColorRGBUAny, ColorRGBFAny, ColorRGBF64Any,
-  ColorRGBAny, ColorA, Color
 
 type
   Point* = tuple[x, y: int]
@@ -95,7 +92,7 @@ func converted*[I, T: Color](i: Image[I], t: typedesc[T]): Image[T] =
   when T is I:
     result = i
   else:
-    result = initImage[T](i.width, i.height)
+    result.initImage(i.width, i.height)
     for n in 0..i.data.high:
       result[n] = i[n].to(T)
 
@@ -106,7 +103,7 @@ func fill*[T: Color](i: var Image[T], c: T) =
 
 func copyRegion*[T: Color](image: Image[T], x, y, w, h: int): Image[T] =
   ## Copies region at x, y coordinates with w, h dimensions into a new image.
-  result = initImage[T](w, h)
+  result.initImage(w, h)
   for i in 0..<h:
     copyMem addr result[i * w], unsafeAddr image[x, i + y], w * sizeof(T)
 
@@ -130,7 +127,7 @@ func blit*[T: Color](dest: var Image[T], src: Image, x, y: int, rect: Rect) =
 
 func paddedEmpty*[T: Color](img: Image[T], padX, padY: int): Image[T] =
   ## Returns padded image with default color. Transparent for images with alpha channel.
-  result = initImage[T](img.w + padX * 2, img.h + padY * 2)
+  result.initImage(img.w + padX * 2, img.h + padY * 2)
   result.blit img, padX, padY
 
 func paddedExtend*[T: Color](img: Image[T], padX, padY: int): Image[T] =
@@ -322,4 +319,3 @@ func getDominantColors*[T: Color](i: Image[T], threshold = 0.01): seq[ColorRGBF6
   for bucket in averages:
     if bucket.n / sampledCount > threshold:
       result.add bucket.c
-

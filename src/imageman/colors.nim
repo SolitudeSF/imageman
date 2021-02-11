@@ -1,4 +1,5 @@
 import math, random, typetraits
+import ./util
 
 type
   ColorComponent* = uint8 | float32 | float64
@@ -76,42 +77,49 @@ template `h=`*(c: var (ColorHSLuv | ColorHPLuv), i: float64) = c[0] = i
 template `s=`*(c: var ColorHSLuv, i: float64) = c[1] = i
 template `p=`*(c: var ColorHPLuv, i: float64) = c[1] = i
 template `l=`*(c: var (ColorHSLuv | ColorHPLuv), i: float64) = c[2] = i
-
-template componentType*(t: typedesc[Color]): typedesc =
-  ## Returns component type of a given color type.
-  when t is ColorRGBFAny | ColorHSL:
-    float32
-  elif t is ColorRGBF64Any | ColorHSLuv | ColorHPLuv:
-    float64
-  else:
-    uint8
+template g*(c: ColorGAny): untyped = c[0]
+template `g=`*(c: var ColorGAny, i: untyped) = c[0] = i
 
 template hasAlpha*(t: typedesc[Color]): bool = t is ColorA
 
-template iteratorImpl[T: Color](c: T): untyped =
-  when T is ColorRGBAny:
-    yield c.r
-    yield c.g
-    yield c.b
-  elif T is (ColorHSL | ColorHSLuv):
-    yield c.h
-    yield c.s
-    yield c.l
-  elif T is ColorHPLuv:
-    yield c.h
-    yield c.p
-    yield c.l
-  when T is ColorA:
-    yield c.a
+template arrayType[N, T](a: typedesc[array[N, T]]): typedesc = T
 
-iterator items*[T: Color](c: T): T.componentType = iteratorImpl[T](c)
-iterator mitems*[T: Color](c: var T): var T.componentType = iteratorImpl[T](c)
+template componentType*(t: typedesc[Color]): typedesc =
+  ## Returns component type of a given color type.
+  arrayType distinctBase t
 
-template maxComponentValue*(t: typedesc[ColorRGBAny]): untyped =
+template componentCount*(t: typedesc[Color]): static[int] =
+  ## Returns number of components of a given color type (including alpha).
+  len t
+
+template colorComponentCount*(t: typedesc[Color]): static[int] =
+  ## Returns number of components of a given color type (excluding alpha).
+  when t.hasAlpha:
+    t.componentCount - 1
+  else:
+    t.componentCount
+
+iterator items*[T: Color](c: T): T.componentType =
+  staticFor i, 0, T.componentCount:
+    yield c[i]
+
+iterator mitems*[T: Color](c: var T): var T.componentType =
+  staticFor i, 0, T.componentCount:
+    yield c[i]
+
+template forEachIndex*(c: typedesc[Color], i, body): untyped =
+  staticFor i, 0, c.componentCount:
+    body
+
+template forEachColorIndex*(c: typedesc[Color], i, body): untyped =
+  staticFor i, 0, c.colorComponentCount:
+    body
+
+template maxComponentValue*(T: typedesc[ColorRGBAny]): untyped =
   ## Returns maximum component value of a give color type.
-  when t is ColorRGBFAny:
+  when T.componentType is float32:
     1.0'f32
-  elif t is ColorRGBF64Any:
+  elif T.componentType is float64:
     1.0'f64
   else:
     255'u8
@@ -459,8 +467,7 @@ func isGreyscale*(c: ColorRGBAny): bool =
 
 func interpolate*[T: Color](a, b: T, x: float32, L = 1.0): T =
   ## Returns linearly interpolated color value.
-  result[0] = (T.componentType) (a[0].precise + x * (b[0].precise - a[0].precise) / L)
-  result[1] = (T.componentType) (a[1].precise + x * (b[1].precise - a[1].precise) / L)
-  result[2] = (T.componentType) (a[2].precise + x * (b[2].precise - a[2].precise) / L)
+  T.forEachColorIndex i:
+    result[i] = componentType(T) (a[i].precise + x * (b[i].precise - a[i].precise) / L)
   when T is ColorA:
     result.a = (T.componentType) (a.a.precise + x * (b.a.precise - a.a.precise) / L)
