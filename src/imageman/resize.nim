@@ -1,7 +1,7 @@
 import ./images, ./colors
 
 func resizedNN*[T: Color](img: Image[T], w, h: int): Image[T] =
-  result.initImage(w, h)
+  result.initImage w, h
   let
     xr = img.w.float / w.float
     yr = img.h.float / h.float
@@ -13,7 +13,7 @@ func resizedNN*[T: Color](img: Image[T], w, h: int): Image[T] =
       result[i + j] = img[x + y]
 
 func resizedNN*[T: Color](img: Image[T], w, h: float): Image[T] =
-  result.initImage(int(img.w.float * w), int(img.h.float * h))
+  result.initImage int(img.w.float * w), int(img.h.float * h)
   for j in 0..<result.h:
     let y = int(j.float / h) * img.w
     let j = j * result.w
@@ -22,7 +22,7 @@ func resizedNN*[T: Color](img: Image[T], w, h: float): Image[T] =
       result[i + j] = img[x + y]
 
 func resizedNNi*[T: Color](img: Image[T], w, h: int): Image[T] =
-  result = initImage[T](w, h)
+  result.initImage w, h
   let
     xr = (img.w shl 16) div w
     yr = (img.h shl 16) div h
@@ -34,7 +34,7 @@ func resizedNNi*[T: Color](img: Image[T], w, h: int): Image[T] =
       result[i + j] = img[x + y]
 
 func resizedBilinear*[T: Color](img: Image[T], w, h: int): Image[T] =
-  result.initImage(w, h)
+  result.initImage w, h
   let
     xr = (img.w - 1).float / w.float
     yr = (img.h - 1).float / h.float
@@ -53,7 +53,7 @@ func resizedBilinear*[T: Color](img: Image[T], w, h: int): Image[T] =
         c = img[id + img.w]
         d = img[id + img.w + 1]
         pos = jw + i
-      T.forEachColorIndex t:
+      for t in colorIndexes T:
         result[pos][t] = componentType(T) (
           a[t].precise * (1 - xd) * (1 - yd) +
           b[t].precise *      xd  * (1 - yd) +
@@ -61,7 +61,7 @@ func resizedBilinear*[T: Color](img: Image[T], w, h: int): Image[T] =
           d[t].precise *      xd  *      yd)
 
 func resizedTrilinear*[T: Color](img: Image[T], w, h: int): Image[T] =
-  result.initImage(w, h)
+  result.initImage w, h
   var
     sech = img.h
     secw = img.w
@@ -88,7 +88,7 @@ func cubicFilter(a, b, c: float): float {.inline.} =
   else: 0
 
 func resizedBicubic*[T: Color](img: Image[T], w, h: int, b = 1.0, c = 0.0): Image[T] =
-  result.initImage(w, h)
+  result.initImage w, h
   let
     xr = img.w.float / w.float
     yr = img.h.float / h.float
@@ -114,10 +114,10 @@ func resizedBicubic*[T: Color](img: Image[T], w, h: int, b = 1.0, c = 0.0): Imag
               product = bdyn * bmdx
               p = img[oxm, oyn]
 
-            T.forEachColorIndex i:
+            for i in colorIndexes T:
               acc[i] += componentType(T) (p[i].precise * product)
       let coord = i + jw
-      T.forEachColorIndex i:
+      for i in colorIndexes T:
         result[coord][i] = acc[i]
       when T is ColorA:
         result[coord].a = img[int(i.float * xr), int(j.float * yr)].a

@@ -6,7 +6,7 @@ func toKernel*(a: openArray[float32], width: int): Image[ColorGF] =
   copy result.data, a, a.len, ColorGF [it]
 
 func convolved*[T: Color](img: Image[T], k: Image[ColorGF], padKind = pkMirror): Image[T] =
-  result = initImage[T](img.width, img.height)
+  result.initImage img.width, img.height
 
   let
     kh = k.height div 2
@@ -32,27 +32,27 @@ func convolved*[T: Color](img: Image[T], k: Image[ColorGF], padKind = pkMirror):
           let
             pos = precalc + i - kw
             coeff = k[j * k.width + i][0]
-          T.forEachColorIndex i:
+          for i in colorIndexes T:
             acc[i] += src[pos][i].precise * coeff
       let target = yw + x
       when T.componentType is uint8:
-        T.forEachColorIndex i:
+        for i in colorIndexes T:
           result[target][i] = componentType(T) clamp(acc[i] / denom, 0, T.maxComponentValue.precise)
       else:
-        T.forEachColorIndex i:
+        for i in colorIndexes T:
           result[target][i] = componentType(T) acc[i] / denom
       when T is ColorA:
         result[target].a = img[target].a
 
 func quantize*[T: ColorRGBFAny | ColorRGBF64Any](c: var T, factor: float) =
-  T.forEachColorIndex i:
+  for i in colorIndexes T:
     c[i] = round(factor * c[i]) / factor
 
 func quantize*[T: ColorRGBUAny](c: var T, factor: uint8) =
   let
     a = factor.float32 / 255.0
     b = float32(255'u8 div factor)
-  T.forEachColorIndex i:
+  for i in colorIndexes T:
     c[i] = uint8(round(a * c[i].float32) * b)
 
 func quantized*[T: ColorRGBAny](c: T, factor: T.componentType): T =
@@ -63,12 +63,12 @@ func filterGreyscale*[T: ColorRGBAny](image: var Image[T]) =
   for pixel in image.data.mitems:
     let c = (T.componentType) (pixel.r.precise * 0.2126 +
       pixel.g.precise * 0.7152 + pixel.b.precise * 0.0722)
-    T.forEachColorIndex i:
+    for i in colorIndexes T:
       pixel[i] = c
 
 func filterNegative*[T: ColorRGBAny](image: var Image[T]) =
   for pixel in image.data.mitems:
-    T.forEachColorIndex i:
+    for i in colorIndexes T:
       pixel[i] = T.maxComponentValue - pixel[i]
 
 func filterSepia*[T: ColorRGBAny](image: var Image[T]) =

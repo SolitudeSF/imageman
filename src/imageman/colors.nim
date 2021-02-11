@@ -1,4 +1,4 @@
-import math, random, typetraits
+import math, random, typetraits, macros
 import ./util
 
 type
@@ -99,21 +99,31 @@ template colorComponentCount*(t: typedesc[Color]): static[int] =
   else:
     t.componentCount
 
+macro componentIndexes*(f: ForLoopStmt): untyped =
+  let
+    idx = f[0]
+    arg = f[1][1]
+    body = f[2]
+
+  result = quote do:
+    staticFor `idx`, 0, componentCount `arg`: `body`
+
+macro colorIndexes*(f: ForLoopStmt): untyped =
+  let
+    idx = f[0]
+    arg = f[1][1]
+    body = f[2]
+
+  result = quote do:
+    staticFor `idx`, 0, colorComponentCount `arg`: `body`
+
 iterator items*[T: Color](c: T): T.componentType =
-  staticFor i, 0, T.componentCount:
+  for i in componentIndexes T:
     yield c[i]
 
 iterator mitems*[T: Color](c: var T): var T.componentType =
-  staticFor i, 0, T.componentCount:
+  for i in componentIndexes T:
     yield c[i]
-
-template forEachIndex*(c: typedesc[Color], i, body): untyped =
-  staticFor i, 0, c.componentCount:
-    body
-
-template forEachColorIndex*(c: typedesc[Color], i, body): untyped =
-  staticFor i, 0, c.colorComponentCount:
-    body
 
 template maxComponentValue*(T: typedesc[ColorRGBAny]): untyped =
   ## Returns maximum component value of a give color type.
@@ -332,23 +342,20 @@ func to*[T: ColorRGBAF](c: ColorRGBF, t: typedesc[T]): T =
   result.a = 1.0
 
 func to*[T: ColorRGBUAny](c: ColorRGBFAny | ColorRGBF64Any, t: typedesc[T]): T =
-  result.r = c.r.toUint8
-  result.g = c.g.toUint8
-  result.b = c.b.toUint8
+  for i in colorIndexes T:
+    result[i] = c[i].toUint8
   when T is ColorA:
     result.a = when c is ColorA: c.a.toUint8 else: 255
 
 func to*[T: ColorRGBFAny](c: ColorRGBUAny, t: typedesc[T]): T =
-  result.r = c.r.toFloat32
-  result.g = c.g.toFloat32
-  result.b = c.b.toFloat32
+  for i in colorIndexes T:
+    result[i] = c[i].toFloat32
   when T is ColorA:
     result.a = when c is ColorA: c.a.toFloat32 else: 1.0
 
 func to*[T: ColorRGBF64Any](c: ColorRGBUAny, t: typedesc[T]): T =
-  result.r = c.r.toFloat64
-  result.g = c.g.toFloat64
-  result.b = c.b.toFloat64
+  for i in colorIndexes T:
+    result[i] = c[i].toFloat64
   when T is ColorA:
     result.a = when c is ColorA: c.a.toFloat64 else: 1.0
 
@@ -386,16 +393,14 @@ func to*[T: ColorHSL](c: ColorRGBF, t: typedesc[T]): T =
     result.s = chroma / (1 - abs(2 * result.l - 1))
 
 func to*[T: ColorRGBFAny](c: ColorRGBF64Any, t: typedesc[T]): T =
-  result.r = c.r.float32
-  result.g = c.g.float32
-  result.b = c.b.float32
+  for i in colorIndexes T:
+    result[i] = c[i].float32
   when T is ColorA:
     result.a = when c is ColorA: c.a.float32 else: 1.0
 
 func to*[T: ColorRGBF64Any](c: ColorRGBFAny, t: typedesc[T]): T =
-  result.r = c.r.float64
-  result.g = c.g.float64
-  result.b = c.b.float64
+  for i in colorIndexes T:
+    result[i] = c[i].float64
   when T is ColorA:
     result.a = when c is ColorA: c.a.float64 else: 1.0
 
@@ -426,9 +431,8 @@ func blendColorValue*[T: ColorComponent](a, b: T, t: float32): T {.inline.} =
 
 func `+`*[T: Color](a, b: T): T =
   ## Blends two colors.
-  result.r = blendColorValue(a.r, b.r, 0.3)
-  result.g = blendColorValue(a.g, b.g, 0.3)
-  result.b = blendColorValue(a.b, b.b, 0.3)
+  for i in colorIndexes T:
+    result[i] = blendColorValue(a[i], b[i], 0.3)
   when T is ColorA:
     result.a = a.a
 
@@ -458,8 +462,8 @@ proc rand*[T: Color]: T =
 
 func rand*[T: Color](r: var Rand): T =
   ## Returns random color.
-  for c in result.mitems:
-    c = typeof(c) r.rand(T.maxComponentValue)
+  for i in componentIndexes T:
+    result[i] = componentType(T) r.rand(T.maxComponentValue)
 
 func isGreyscale*(c: ColorRGBAny): bool =
   ## Checks if color is grayscale (all color components are equal).
@@ -467,7 +471,7 @@ func isGreyscale*(c: ColorRGBAny): bool =
 
 func interpolate*[T: Color](a, b: T, x: float32, L = 1.0): T =
   ## Returns linearly interpolated color value.
-  T.forEachColorIndex i:
+  for i in colorIndexes T:
     result[i] = componentType(T) (a[i].precise + x * (b[i].precise - a[i].precise) / L)
   when T is ColorA:
     result.a = (T.componentType) (a.a.precise + x * (b.a.precise - a.a.precise) / L)
