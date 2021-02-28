@@ -1,4 +1,4 @@
-import ./imagetype, ../colors
+import ../colors, ../images
 
 when defined(windows):
   const libname = "libpng16(-16).dll"
@@ -91,16 +91,12 @@ proc errorHandler(png: ptr PngStruct, msg: cstring) {.cdecl.} =
 proc warningHandler(png: ptr PngStruct, msg: cstring) {.cdecl.} =
   discard
 
-template readPNGImpl(source: typed): untyped =
+template readPNGImpl(body: untyped): untyped =
   let
-    png = png_create_read_struct(PNG_LIBPNG_VER_STRING, nil, errorHandler, warningHandler)
+    png {.inject.} = png_create_read_struct(PNG_LIBPNG_VER_STRING, nil, errorHandler, warningHandler)
     info = png_create_info_struct(png)
 
-  when source is File:
-    png_init_io png, source
-  elif source is openArray[char]:
-    var reader = DataReader(start: unsafeAddr source[0], limit: source.len.uint)
-    png_set_read_fn png, addr reader, pngReadString
+  body
 
   png_read_info png, info
 
@@ -157,32 +153,35 @@ template readPNGImpl(source: typed): untyped =
   else:
     return r.converted(T)
 
-proc readPNG*[T: Color](file: File): Image[T] = readPNGImpl file
-proc readPNG*[T: Color](data: openArray[char]): Image[T] = readPNGImpl data
+proc readPNG*[T: Color](file: File): Image[T] =
+  readPNGImpl:
+    png_init_io png, file
+
+proc readPNG*[T: Color](data: openArray[char]): Image[T] =
+  readPNGImpl:
+    var reader = DataReader(start: unsafeAddr data[0], limit: data.len.uint)
+    png_set_read_fn png, addr reader, pngReadString
 
 proc loadPNG*[T: Color](path: string): Image[T] =
   let file = open(path, fmRead)
   defer: close file
   result = readPNG[T](file)
 
-proc pngWriteString(png: ptr PngStruct, outBytes: ptr cuchar, count: csize_t) =
-  var result = cast[ptr string](png_get_io_ptr png)
+proc pngWriteBytes(png: ptr PngStruct, outBytes: ptr cuchar, count: csize_t) =
+  var result = cast[ptr seq[byte]](png_get_io_ptr png)
   result[].setLen result[].len + count.int
   let address = addr result[][result[].len - count.int]
   copyMem address, outBytes, count
 
-proc pngFlushString(png: ptr PngStruct) = discard
+proc pngFlushBytes(png: ptr PngStruct) = discard
 
-template writePNGImpl[T: Color](i: untyped, target: typed,
-  compression: range[0..10], interlace: bool, filter: FilterKind): untyped =
+template writePNGImpl[T: Color](i: Image[T], compression: range[0..10], interlace: bool,
+  filter: FilterKind, body: untyped): untyped =
   let
-    png = png_create_write_struct(PNG_LIBPNG_VER_STRING, nil, errorHandler, warningHandler)
+    png {.inject.} = png_create_write_struct(PNG_LIBPNG_VER_STRING, nil, errorHandler, warningHandler)
     info = png_create_info_struct(png)
 
-  when target is File:
-    png_init_io png, file
-  elif target is string:
-    png_set_write_fn png, addr target, pngWriteString, pngFlushString
+  body
 
   png_set_IHDR(png, info, i.width.cuint, i.height.cuint, 8,
     when T is ColorA: PNG_COLOR_TYPE_RGB_ALPHA else: PNG_COLOR_TYPE_RGB,
@@ -194,14 +193,13 @@ template writePNGImpl[T: Color](i: untyped, target: typed,
 
   png_write_info png, info
 
-  when T isnot ColorRGBUAny:
-    let i = i.converted(when T is ColorA: ColorRGBAU else: ColorRGBU)
+  let img = i.converted(when T is ColorA: ColorRGBAU else: ColorRGBU)
 
   var
-    rowPointers = newSeq[ptr cuchar](i.height)
-    address = cast[int](unsafeAddr i[0])
+    rowPointers = newSeq[ptr cuchar](img.height)
+    address = cast[int](unsafeAddr img[0])
 
-  let rowSize = i.width * sizeof i.colorType
+  let rowSize = img.width * sizeof img.colorType
 
   for n in 0..rowPointers.high:
     rowPointers[n] = cast[ptr cuchar](address)
@@ -214,11 +212,13 @@ template writePNGImpl[T: Color](i: untyped, target: typed,
 
 proc writePNG*[T: Color](img: Image[T], file: File,
   compression: range[0..10] = 0, interlace = false, filter = fkNone) =
-  writePNGImpl[T] img, file, compression, interlace, filter
+  img.writePNGImpl compression, interlace, filter:
+    png_init_io png, file
 
 proc writePNG*[T: Color](img: Image[T], compression: range[0..10] = 0,
-  interlace = false, filter = fkNone): string =
-  writePNGImpl[T] img, result, compression, interlace, filter
+  interlace = false, filter = fkNone): seq[byte] =
+  img.writePNGImpl compression, interlace, filter:
+    png_set_write_fn png, addr result, pngWriteBytes, pngFlushBytes
 
 proc savePNG*[T: Color](i: Image[T], filename: string,
   compression: range[0..10] = 0, interlace = false, filter = fkNone) =

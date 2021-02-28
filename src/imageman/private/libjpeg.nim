@@ -1,4 +1,4 @@
-import ./imagetype, ../colors
+import ../colors, ../images
 
 when defined(windows):
   const libname = "libjpeg(|-8).dll"
@@ -274,18 +274,15 @@ proc newDecompressor(err: var JpegErrorMgr): JpegDecompress =
   err.outputMessage = discardOutput
   jpeg_CreateDecompress addr result, JPEG_LIB_VERSION, csize_t sizeof JpegDecompress
 
-template readJPEGImpl(source: typed, dctMethod: JpegDCTMethod,
-  fancyUpsampling, blockSmoothing: bool): untyped =
+template readJPEGImpl(dctMethod: JpegDCTMethod,
+  fancyUpsampling, blockSmoothing: bool, body: untyped): untyped =
   var
     err: JpegErrorMgr
-    dinfo = newDecompressor(err)
+    dinfo {.inject.} = newDecompressor(err)
     dinfop = addr dinfo
   defer: jpeg_destroy_decompress dinfop
 
-  when source is File:
-    jpeg_stdio_src dinfop, source
-  elif source is openArray[char]:
-    jpeg_mem_src dinfop, cast[ptr cuchar](unsafeAddr source[0]), source.len.culong
+  body
 
   discard jpeg_read_header(dinfop, 1)
 
@@ -320,11 +317,13 @@ template readJPEGImpl(source: typed, dctMethod: JpegDCTMethod,
 
 proc readJPEG*[T: Color](file: File, dctMethod = jDCTmISlow,
   fancyUpsampling = false, blockSmoothing = true): Image[T] =
-  readJPEGImpl file, dctMethod, fancyUpsampling, blockSmoothing
+  readJPEGImpl dctMethod, fancyUpsampling, blockSmoothing:
+    jpeg_stdio_src addr dinfo, file
 
 proc readJPEG*[T: Color](data: openArray[char], dctMethod = jDCTmISlow,
   fancyUpsampling = false, blockSmoothing = true): Image[T] =
-  readJPEGImpl data, dctMethod, fancyUpsampling, blockSmoothing
+  readJPEGImpl dctMethod, fancyUpsampling, blockSmoothing:
+    jpeg_mem_src addr dinfo, cast[ptr cuchar](unsafeAddr source[0]), source.len.culong
 
 proc loadJPEG*[T: Color](path: string, dctMethod = jDCTmISlow,
   fancyUpsampling = false, blockSmoothing = true): Image[T] =
@@ -341,7 +340,7 @@ proc newCompressor(err: var JpegErrorMgr): JpegCompress =
 proc initDestination[T](cinfo: ptr JpegCompress) =
   let a = cast[ptr DestinationMgr[T]](cinfo.dest)
   a.buffer[].setLen(65536)
-  a.pub.nextOutputByte = addr a.buffer[0]
+  a.pub.nextOutputByte = cast[ptr cuchar](addr a.buffer[0])
   a.pub.freeInBuffer = a.buffer[].len.csize_t
 
 proc emptyOutputBuffer[T](cinfo: ptr JpegCompress): Boolean =
@@ -349,7 +348,7 @@ proc emptyOutputBuffer[T](cinfo: ptr JpegCompress): Boolean =
     a = cast[ptr DestinationMgr[T]](cinfo.dest)
     size = a.buffer[].len
   a.buffer[].setLen(size * 2)
-  a.pub.nextOutputByte = addr a.buffer[][size]
+  a.pub.nextOutputByte = cast[ptr cuchar](addr a.buffer[][size])
   a.pub.freeInBuffer = size.csize_t
   result = toBoolean(true)
 
@@ -363,19 +362,15 @@ proc newDestinationMgr[T](buf: ptr T): DestinationMgr[T] =
   result.pub.emptyOutputBuffer = emptyOutputBuffer[T]
   result.pub.termDestination = termDestination[T]
 
-template writeJPEGImpl[T: Color](img: Image[T], dst: typed, quality: int,
-  optimizeCoding: bool): untyped =
+template writeJPEGImpl[T: Color](img: Image[T], quality: int,
+  optimizeCoding: bool, body: untyped): untyped =
   var
     err: JpegErrorMgr
-    cinfo = newCompressor(err)
+    cinfo {.inject.} = newCompressor(err)
   let cinfop = addr cinfo
   defer: jpeg_destroy_compress cinfop
 
-  when dst is File:
-    jpeg_stdio_dest cinfop, dst
-  when dst is string:
-    var destMgr = newDestinationMgr(addr dst)
-    cinfo.dest = cast[ptr JpegDestinationMgr](addr destMgr)
+  body
 
   let i = img.converted(ColorRGBU)
 
@@ -410,11 +405,14 @@ template writeJPEGImpl[T: Color](img: Image[T], dst: typed, quality: int,
 
 proc writeJPEG*[T: Color](i: Image[T], file: File, quality: range[0..100] = 75,
   optimizeCoding = false, dctMethod = jDCTmISlow) =
-  i.writeJPEGImpl file, quality, optimizeCoding
+  i.writeJPEGImpl quality, optimizeCoding:
+    jpeg_stdio_dest addr cinfo, file
 
 proc writeJPEG*[T: Color](i: Image[T], quality: range[0..100] = 75,
-  optimizeCoding = false, dctMethod = jDCTmISlow): string =
-  i.writeJPEGImpl result, quality, optimizeCoding
+  optimizeCoding = false, dctMethod = jDCTmISlow): seq[byte] =
+  i.writeJPEGImpl quality, optimizeCoding:
+    var destMgr = newDestinationMgr(addr result)
+    cinfo.dest = cast[ptr JpegDestinationMgr](addr destMgr)
 
 proc saveJPEG*[T: Color](i: Image[T], path: string, quality: range[0..100] = 75,
   optimizeCoding = false, dctMethod = jDCTmISlow) =

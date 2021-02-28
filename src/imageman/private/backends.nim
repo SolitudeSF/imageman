@@ -1,4 +1,4 @@
-import ../colors, ./imagetype
+import ../colors, ../images
 
 const
   imagemanLibjpeg {.booldefine.} = true

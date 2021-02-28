@@ -1,8 +1,12 @@
 import algorithm
-import ./colors, ./util, ./private/[backends, imagetype]
-export backends, imagetype
+import ./colors, ./util
 
 type
+  Image*[T: Color] = object
+    ## Image object. `data` field is a sequence of pixels stored in arrays.
+    width*, height*: int
+    data*: seq[T]
+
   Point* = tuple[x, y: int]
     ## Pair of coordinates.
   Rect* = object
@@ -87,14 +91,25 @@ func initImage*[T: Color](w, h: Natural): Image[T] =
 func initImage*[T: Color](i: var Image[T], w, h: Natural) =
   i = initImage[T](w, h)
 
-func converted*[I, T: Color](i: Image[I], t: typedesc[T]): Image[T] =
-  ## Converts image color mode if appropriate converter found.
-  when T is I:
-    result = i
-  else:
-    result.initImage(i.width, i.height)
-    for n in 0..i.data.high:
-      result[n] = i[n].to(T)
+when defined(gcDestructors):
+  func converted*[I, T: Color](i: sink Image[I], t: typedesc[T]): Image[T] =
+    ## Converts image color mode if appropriate converter found.
+    when T is I:
+      result = i
+    else:
+      result.initImage(i.width, i.height)
+      for n in 0..i.data.high:
+        result[n] = i[n].to(T)
+else:
+  template converted*[I, T: Color](i: Image[I], t: typedesc[T]): Image[T] =
+    ## Converts image color mode if appropriate converter found.
+    when T is I:
+      i
+    else:
+      var result = initImage[T](i.width, i.height)
+      for n in 0..i.data.high:
+        result[n] = i[n].to(t)
+      result
 
 func fill*[T: Color](i: var Image[T], c: T) =
   ## Fills entire image with single color.
@@ -319,3 +334,6 @@ func getDominantColors*[T: Color](i: Image[T], threshold = 0.01): seq[ColorRGBF6
   for bucket in averages:
     if bucket.n / sampledCount > threshold:
       result.add bucket.c
+
+import ./private/backends
+export backends
