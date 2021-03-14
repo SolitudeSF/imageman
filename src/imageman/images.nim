@@ -130,15 +130,48 @@ func `[]`*[T: Color](image: Image[T], x, y: Slice[int]): Image[T] =
   ## Slice syntax for region copy.
   image.copyRegion(min(x.a, x.b), min(y.a, y.b), abs(x.b - x.a) + 1, abs(y.b - y.a) + 1)
 
-func blit*[T: Color](dest: var Image[T], src: Image, x, y: int) =
+func blit*[T: Color](dest: var Image[T], src: Image[T], x, y: int) =
   ## Blit image `src` onto the `dest` in specified coordinates
   for i in 0..<src.height:
     copyMem addr dest[x, i + y], unsafeAddr src[0, i], src.width * sizeof(T)
 
-func blit*[T: Color](dest: var Image[T], src: Image, x, y: int, rect: Rect) =
+func blit*[T: Color](dest: var Image[T], src: Image[T], x, y: int, rect: Rect) =
   ## Blit fragment of image `src` delimited by rectangle in specified coordinates.
   for i in 0..<rect.h:
     copyMem addr dest[x, i + y], unsafeAddr src[rect.x, i + rect.y], rect.w * sizeof(T)
+
+func blitAlpha*[T: ColorA](dest: var Image[T], src: Image[T], x, y: int) =
+  ## Dumb version of blend that copies pixels only if they are fully opaque
+  for i in 0..<src.height:
+    let
+      destStrides = (i + y) * dest.width
+      srcStrides = i * src.width
+    for j in 0..<src.width:
+      let
+        destCoord = destStrides + j + x
+        srcCoord = srcStrides + j
+      if src[srcCoord].a == T.maxComponentValue:
+        dest[destCoord] = src[srcCoord]
+
+func blend*[T: ColorA](dest: var Image[T], src: Image[T], x, y: int) =
+  for i in 0..<src.height:
+    let
+      destStrides = (i + y) * dest.width
+      srcStrides = i * src.width
+    for j in 0..<src.width:
+      let
+        destCoord = destStrides + j + x
+        destPixel = dest[destCoord]
+        srcCoord = srcStrides + j
+        srcPixel = src[srcCoord]
+      if srcPixel.a > 0:
+        let
+          inverseAlpha = T.maxComponentValue.precise - srcPixel.a.precise
+          alpha = srcPixel.a.precise + destPixel.a.precise * inverseAlpha
+        for idx in colorIndexes T:
+          dest[destCoord][idx] = componentType(T) (
+            (srcPixel[idx].precise * srcPixel.a.precise +
+             destPixel[idx].precise * destPixel.a.precise * inverseAlpha) / alpha)
 
 func paddedEmpty*[T: Color](img: Image[T], padX, padY: int): Image[T] =
   ## Returns padded image with default color. Transparent for images with alpha channel.
