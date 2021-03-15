@@ -7,7 +7,7 @@ template toColorMode(t: typedesc[Color]): untyped =
 template importData(w, h: int, s: seq[byte]): untyped =
   var r = initImage[when T is ColorA: ColorRGBAU else: ColorRGBU](w, h)
   copyMem addr r[0], unsafeAddr s[0], s.len
-  return (when T is r.colorType: r else: r.converted(T))
+  return (when T is colorType r: r else: r.converted(T))
 
 template toExportData[T: Color](i: Image[T]): seq[byte] =
   when T is ColorRGBUAny:

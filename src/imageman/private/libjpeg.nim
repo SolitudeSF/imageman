@@ -296,7 +296,7 @@ template readJPEGImpl(dctMethod: JpegDCTMethod,
     r = initImage[ColorRGBU](dinfo.outputWidth, dinfo.outputHeight)
     rows = newSeq[ptr UncheckedArray[cuchar]](r.height)
     address = cast[int](addr r[0])
-  let rowWidth = r.width * sizeof r.colorType
+  let rowWidth = r.width * sizeof colorType r
 
   for row in 0..rows.high:
     rows[row] = cast[ptr UncheckedArray[cuchar]](address)
@@ -389,7 +389,7 @@ template writeJPEGImpl[T: Color](img: Image[T], quality: int,
   var
     rows = newSeq[ptr UncheckedArray[cuchar]](i.height)
     address = cast[int](unsafeAddr i[0])
-  let rowWidth = i.width * sizeof i.colorType
+  let rowWidth = i.width * sizeof colorType i
 
   for row in 0..rows.high:
     rows[row] = cast[ptr UncheckedArray[cuchar]](address)

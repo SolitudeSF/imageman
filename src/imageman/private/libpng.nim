@@ -138,7 +138,7 @@ template readPNGImpl(body: untyped): untyped =
     rowPointers = newSeq[ptr cuchar](r.height)
     address = cast[int](addr r[0])
 
-  let rowSize = r.width * sizeof r.colorType
+  let rowSize = r.width * sizeof colorType r
 
   for i in 0..rowPointers.high:
     rowPointers[i] = cast[ptr cuchar](address)
@@ -199,7 +199,7 @@ template writePNGImpl[T: Color](i: Image[T], compression: range[0..10], interlac
     rowPointers = newSeq[ptr cuchar](img.height)
     address = cast[int](unsafeAddr img[0])
 
-  let rowSize = img.width * sizeof img.colorType
+  let rowSize = img.width * sizeof colorType img
 
   for n in 0..rowPointers.high:
     rowPointers[n] = cast[ptr cuchar](address)
