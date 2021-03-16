@@ -101,17 +101,17 @@ template readPNGImpl(body: untyped): untyped =
   png_read_info png, info
 
   let
-    colorType = png_get_color_type(png, info).int
+    readColorType = png_get_color_type(png, info).int
     bitDepth = png_get_bit_depth(png, info).int
-    hasAlpha = (colorType and PNG_COLOR_MASK_ALPHA) > 0
+    hasAlpha = (readColorType and PNG_COLOR_MASK_ALPHA) > 0
 
   if bitDepth == 16:
     png_set_strip_16 png
 
-  if colorType == PNG_COLOR_MASK_PALETTE:
+  if readColorType == PNG_COLOR_MASK_PALETTE:
     png_set_palette_to_rgb png
 
-  if colorType == PNG_COLOR_TYPE_GRAY and bitDepth < 8:
+  if readColorType == PNG_COLOR_TYPE_GRAY and bitDepth < 8:
     png_set_expand_gray_1_2_4_to_8 png
 
   if T is ColorA and png_get_valid(png, info, PNG_INFO_tRNS) != 0:
@@ -124,8 +124,8 @@ template readPNGImpl(body: untyped): untyped =
     when T is ColorA:
       png_set_filler(png, 0xFF, PNG_FILLER_AFTER)
 
-  if color_type == PNG_COLOR_TYPE_GRAY or
-     color_type == PNG_COLOR_TYPE_GRAY_ALPHA:
+  if readColorType == PNG_COLOR_TYPE_GRAY or
+     readColorType == PNG_COLOR_TYPE_GRAY_ALPHA:
     png_set_gray_to_rgb png
 
   png_read_update_info png, info
