@@ -2,7 +2,7 @@ import ../colors, ../images
 
 when defined(windows):
   const libname = "libjpeg(|-8).dll"
-elif defined(macos):
+elif defined(macosx):
   const libname = "libjpeg(|.8).dylib"
 else:
   const libname = "libjpeg.so(|.8)"
